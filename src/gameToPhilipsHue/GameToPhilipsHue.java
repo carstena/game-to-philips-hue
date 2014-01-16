@@ -14,13 +14,13 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import nl.q42.jue.FullLight;
 import nl.q42.jue.HueBridge;
-import nl.q42.jue.Light;
 import nl.q42.jue.StateUpdate;
 import nl.q42.jue.exceptions.ApiException;
 
 public class GameToPhilipsHue {
+
+	public static boolean is_running = false;
 
 	static Runnable hueRunnable = new Runnable() {
 		private float[] anArrays;
@@ -28,6 +28,11 @@ public class GameToPhilipsHue {
 		@Override
 		public void run() {
 			try {
+
+				
+				
+				
+				GameToPhilipsHue.is_running = true;
 
 				long redBucket = 0;
 				long greenBucket = 0;
@@ -43,9 +48,9 @@ public class GameToPhilipsHue {
 				int i = 0;
 				for (final File fileEntry : folder.listFiles()) {
 					if (!fileEntry.isDirectory()) {
-						
+
 						if (i + 1 < number_of_files && number_of_files > 1) {
-							fileEntry.delete();
+							 fileEntry.delete();
 						}
 
 						i++;
@@ -54,52 +59,71 @@ public class GameToPhilipsHue {
 					}
 				}
 
-				java.net.URL url = new File(path).toURI().toURL();
-				BufferedImage image = ImageIO.read(url);
+				if (number_of_files > 0) {
 
-				// Loop trough all the pixels of the image
-				for (int x = 0; x < image.getWidth(); x = x + 5) {
-					for (int y = 0; y < image.getHeight(); y = y + 5) {
+					java.net.URL url = new File(path).toURI().toURL();
+					BufferedImage image = ImageIO.read(url);
+					
+					
 
-						Color c = new Color(image.getRGB(x, y));
-						float af[] = Color.RGBtoHSB(c.getRed(), c.getGreen(),
-								c.getBlue(), null);
+					// Loop trough all the pixels of the image
+					for (int x = 0; x < image.getWidth(); x = x + 5) {
+						for (int y = 0; y < image.getHeight(); y = y + 5) {
+							
+							
 
-						// Ignore darker values
-						if ((af[1] * 100) > 10 && (af[2] * 100) > 20) // sat /
-																		// bri
-						{
-							redBucket += c.getRed();
-							greenBucket += c.getGreen();
-							blueBucket += c.getBlue();
+							Color c = new Color(image.getRGB(x, y));
+							float af[] = Color.RGBtoHSB(c.getRed(),
+									c.getGreen(), c.getBlue(), null);
 
-							pixelCount++;
+							// Ignore darker values
+							if ((af[1] * 100) > 10 && (af[2] * 100) > 20) // sat
+																			// /
+																			// bri
+							{
+								redBucket += c.getRed();
+								greenBucket += c.getGreen();
+								blueBucket += c.getBlue();
+
+								pixelCount++;
+							}
 						}
 					}
+					
+					if(pixelCount >0) {
+					
+
+					// Convert Long into Integer
+					int r = (int) redBucket / (int) pixelCount;
+					int g = (int) greenBucket / (int) pixelCount;
+					int b = (int) blueBucket / (int) pixelCount;
+
+					Color averageColor = new Color(r, g, b);
+
+					// RGB to xy
+					float[] xyColor = rgb_to_xy(averageColor);
+					
+//					System.out.println(xyColor);
+
+					// Set lights color
+					HueBridge bridge = new HueBridge(Config.ip, Config.username);
+					nl.q42.jue.Group all = bridge.getAllGroup();
+					StateUpdate update = new StateUpdate().turnOn().setXY(
+							xyColor[0], xyColor[1]);
+					bridge.setGroupState(all, update);
+
+					
+
+					// for (Light light : bridge.getLights()) {
+					// FullLight fullLight = bridge.getLight(light);
+					// bridge.setLightState(fullLight, update);
+					// }
+					}
+					
+//					System.out.println("set");
 				}
 
-				// Convert Long into Integer
-				int r = (int) redBucket / (int) pixelCount;
-				int g = (int) greenBucket / (int) pixelCount;
-				int b = (int) blueBucket / (int) pixelCount;
-
-				Color averageColor = new Color(r, g, b);
-
-				// RGB to xy
-				float[] xyColor = rgb_to_xy(averageColor);
-
-				// Set lights color
-				HueBridge bridge = new HueBridge(Config.ip, Config.username);
-				// nl.q42.jue.Group all = bridge.getAllGroup();
-				StateUpdate update = new StateUpdate().turnOn().setXY(
-						xyColor[0], xyColor[1]);
-				// bridge.setGroupState(all, update);
-
-				for (Light light : bridge.getLights()) {
-					FullLight fullLight = bridge.getLight(light);
-					bridge.setLightState(fullLight, update);
-
-				}
+				GameToPhilipsHue.is_running = false;
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -170,12 +194,16 @@ public class GameToPhilipsHue {
 			ex.printStackTrace();
 		}
 
-		appGui();
+		if (!GameToPhilipsHue.is_running) {
 
-		// Schedule periodic task
-		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-		executor.scheduleAtFixedRate(hueRunnable, 0, Config.refreshrate,
-				TimeUnit.MILLISECONDS);
+			appGui();
+
+			// Schedule periodic task
+			ScheduledExecutorService executor = Executors
+					.newScheduledThreadPool(1);
+			executor.scheduleAtFixedRate(hueRunnable, 0, Config.refreshrate,
+					TimeUnit.MILLISECONDS);
+		}
 	}
 
 	public static void appGui() {
@@ -188,8 +216,9 @@ public class GameToPhilipsHue {
 
 		// Add label
 		JLabel label1;
-		label1 = new JLabel("<html>Running on bridge: " + Config.ip + " " + Config.path + "<br>  every "
-				+ Config.refreshrate / 1000 + "s</html>");
+		label1 = new JLabel("<html>Running on bridge: " + Config.ip + " "
+				+ Config.path + "<br>  every " + Config.refreshrate / 1000
+				+ "s</html>");
 		guiFrame.add(label1);
 
 		// make sure the JFrame is visible
