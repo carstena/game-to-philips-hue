@@ -29,9 +29,6 @@ public class GameToPhilipsHue {
 		public void run() {
 			try {
 
-				
-				
-				
 				GameToPhilipsHue.is_running = true;
 
 				long redBucket = 0;
@@ -50,7 +47,7 @@ public class GameToPhilipsHue {
 					if (!fileEntry.isDirectory()) {
 
 						if (i + 1 < number_of_files && number_of_files > 1) {
-							 fileEntry.delete();
+							fileEntry.delete();
 						}
 
 						i++;
@@ -63,14 +60,72 @@ public class GameToPhilipsHue {
 
 					java.net.URL url = new File(path).toURI().toURL();
 					BufferedImage image = ImageIO.read(url);
+					BufferedImage source = ImageIO.read(url);
 					
-					
+					// new 
+
+				      // Keep track of how many times a hue in a given bin appears in the image.
+				      // Hue values range [0 .. 360), so dividing by 10, we get 36 bins.
+				      int[] colorBins = new int[36];
+
+				      // The bin with the most colors. Initialize to -1 to prevent accidentally
+				      // thinking the first bin holds the dominant color.
+				      int maxBin = -1;
+
+				      // Keep track of sum hue/saturation/value per hue bin, which we'll use to
+				      // compute an average to for the dominant color.
+				      float[] sumHue = new float[36];
+				      float[] sumSat = new float[36];
+				      float[] sumVal = new float[36];
+				      float[] hsv = new float[3];
+
+				      int height = source.getHeight();
+				      int width = source.getWidth();
+				      int[] pixels = new int[width * height];
+//				      source.getPixels(pixels, 0, width, 0, 0, width, height);
+				      for (int row = 0; row < height; row++) {
+				        for (int col = 0; col < width; col++) {
+				          int c = pixels[col + row * width];
+				          // Ignore pixels with a certain transparency.
+				          
+				          Color c2 = new Color(image.getRGB(col, row));
+							
+				          
+				          hsv = Color.RGBtoHSB(c2.getRed(),
+									c2.getGreen(), c2.getBlue(), null);
+
+				          // If a threshold is applied, ignore arbitrarily chosen values for "white" and "black".
+//				          if (applyThreshold && (hsv[1] <= 0.35f || hsv[2] <= 0.35f))
+//				            continue;
+
+				          // We compute the dominant color by putting colors in bins based on their hue.
+				          int bin = (int) Math.floor(hsv[0] / 10.0f);
+
+				          // Update the sum hue/saturation/value for this bin.
+				          sumHue[bin] = sumHue[bin] + hsv[0];
+				          sumSat[bin] = sumSat[bin] + hsv[1];
+				          sumVal[bin] = sumVal[bin] + hsv[2];
+
+				          // Increment the number of colors in this bin.
+				          colorBins[bin]++;
+
+				          // Keep track of the bin that holds the most colors.
+				          if (maxBin < 0 || colorBins[bin] > colorBins[maxBin])
+				            maxBin = bin;
+				        }
+				      }
+
+				    
+				      // Return a color with the average hue/saturation/value of the bin with the most colors.
+				      hsv[0] = sumHue[maxBin]/colorBins[maxBin];
+				      hsv[1] = sumSat[maxBin]/colorBins[maxBin];
+				      hsv[2] = sumVal[maxBin]/colorBins[maxBin];
+//				      newcolor = new Color.HSBtoRGB(hsv[0],hsv[1],hsv[2]);
+					// end new
 
 					// Loop trough all the pixels of the image
 					for (int x = 0; x < image.getWidth(); x = x + 5) {
 						for (int y = 0; y < image.getHeight(); y = y + 5) {
-							
-							
 
 							Color c = new Color(image.getRGB(x, y));
 							float af[] = Color.RGBtoHSB(c.getRed(),
@@ -89,38 +144,36 @@ public class GameToPhilipsHue {
 							}
 						}
 					}
-					
-					if(pixelCount >0) {
-					
 
-					// Convert Long into Integer
-					int r = (int) redBucket / (int) pixelCount;
-					int g = (int) greenBucket / (int) pixelCount;
-					int b = (int) blueBucket / (int) pixelCount;
+					if (pixelCount > 0) {
 
-					Color averageColor = new Color(r, g, b);
+						// Convert Long into Integer
+						int r = (int) redBucket / (int) pixelCount;
+						int g = (int) greenBucket / (int) pixelCount;
+						int b = (int) blueBucket / (int) pixelCount;
 
-					// RGB to xy
-					float[] xyColor = rgb_to_xy(averageColor);
-					
-//					System.out.println(xyColor);
+						Color averageColor = new Color(r, g, b);
 
-					// Set lights color
-					HueBridge bridge = new HueBridge(Config.ip, Config.username);
-					nl.q42.jue.Group all = bridge.getAllGroup();
-					StateUpdate update = new StateUpdate().turnOn().setXY(
-							xyColor[0], xyColor[1]);
-					bridge.setGroupState(all, update);
+						// RGB to xy
+						float[] xyColor = rgb_to_xy(averageColor);
 
-					
+						// System.out.println(xyColor);
 
-					// for (Light light : bridge.getLights()) {
-					// FullLight fullLight = bridge.getLight(light);
-					// bridge.setLightState(fullLight, update);
-					// }
+						// Set lights color
+						HueBridge bridge = new HueBridge(Config.ip,
+								Config.username);
+						nl.q42.jue.Group all = bridge.getAllGroup();
+						StateUpdate update = new StateUpdate().turnOn().setXY(
+								xyColor[0], xyColor[1]);
+						bridge.setGroupState(all, update);
+
+						// for (Light light : bridge.getLights()) {
+						// FullLight fullLight = bridge.getLight(light);
+						// bridge.setLightState(fullLight, update);
+						// }
 					}
-					
-//					System.out.println("set");
+
+					// System.out.println("set");
 				}
 
 				GameToPhilipsHue.is_running = false;
@@ -231,5 +284,7 @@ public class GameToPhilipsHue {
 		public static String path;
 		public static int refreshrate;
 	}
+	
+	
 
 }
