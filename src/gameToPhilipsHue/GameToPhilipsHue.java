@@ -31,18 +31,15 @@ public class GameToPhilipsHue {
 
 				GameToPhilipsHue.is_running = true;
 
-				long redBucket = 0;
-				long greenBucket = 0;
-				long blueBucket = 0;
-				long pixelCount = 0;
-
 				// Read images
 				String folder_path = Config.path;
 				final File folder = new File(folder_path);
 
 				String path = null;
+
 				int number_of_files = folder.list().length;
 				int i = 0;
+
 				for (final File fileEntry : folder.listFiles()) {
 					if (!fileEntry.isDirectory()) {
 
@@ -61,54 +58,28 @@ public class GameToPhilipsHue {
 					java.net.URL url = new File(path).toURI().toURL();
 					BufferedImage image = ImageIO.read(url);
 
-					// Loop trough all the pixels of the image
-					for (int x = 0; x < image.getWidth(); x = x + 5) {
-						for (int y = 0; y < image.getHeight(); y = y + 5) {
+					// Avarage color
+					getAvarageColor(image);
+					
+					// Dominant color
+					Color rgbcolor = getDominantColor(image);
 
-							Color c = new Color(image.getRGB(x, y));
-							float af[] = Color.RGBtoHSB(c.getRed(),
-									c.getGreen(), c.getBlue(), null);
+					// Convert RGB to XY
+					float[] xyColor = rgb_to_xy(rgbcolor);
 
-							// Ignore darker values (sat / bri)
-							if ((af[1] * 100) > 10 && (af[2] * 100) > 20) {
-								redBucket += c.getRed();
-								greenBucket += c.getGreen();
-								blueBucket += c.getBlue();
+					// Set lights color
+					HueBridge bridge = new HueBridge(Config.ip, Config.username);
+					nl.q42.jue.Group all = bridge.getAllGroup();
+					StateUpdate update = new StateUpdate().turnOn().setXY(
+							xyColor[0], xyColor[1]);
+					bridge.setGroupState(all, update);
 
-								pixelCount++;
-							}
-						}
-					}
+					// for (Light light : bridge.getLights()) {
+					// FullLight fullLight = bridge.getLight(light);
+					// bridge.setLightState(fullLight, update);
+					// }
 
-					if (pixelCount > 0) {
-
-						// Convert Long into Integer
-						int r = (int) redBucket / (int) pixelCount;
-						int g = (int) greenBucket / (int) pixelCount;
-						int b = (int) blueBucket / (int) pixelCount;
-
-						Color averageColor = new Color(r, g, b);
-
-						// RGB to xy
-						float[] xyColor = rgb_to_xy(averageColor);
-
-						// System.out.println(xyColor);
-
-						// Set lights color
-						HueBridge bridge = new HueBridge(Config.ip,
-								Config.username);
-						nl.q42.jue.Group all = bridge.getAllGroup();
-						StateUpdate update = new StateUpdate().turnOn().setXY(
-								xyColor[0], xyColor[1]);
-						bridge.setGroupState(all, update);
-
-						// for (Light light : bridge.getLights()) {
-						// FullLight fullLight = bridge.getLight(light);
-						// bridge.setLightState(fullLight, update);
-						// }
-					}
-
-					// System.out.println("set");
+					// end New
 				}
 
 				GameToPhilipsHue.is_running = false;
@@ -161,6 +132,112 @@ public class GameToPhilipsHue {
 			return anArrays;
 		}
 
+		private Color getAvarageColor(BufferedImage image) {
+
+			long redBucket = 0;
+			long greenBucket = 0;
+			long blueBucket = 0;
+			long pixelCount = 0;
+
+			// Loop trough all the pixels of the image
+			for (int x = 0; x < image.getWidth(); x = x + 5) {
+				for (int y = 0; y < image.getHeight(); y = y + 5) {
+
+					Color c = new Color(image.getRGB(x, y));
+					float af[] = Color.RGBtoHSB(c.getRed(), c.getGreen(),
+							c.getBlue(), null);
+
+					// Ignore darker values (sat / bri)
+					if ((af[1] * 100) > 10 && (af[2] * 100) > 20) {
+						redBucket += c.getRed();
+						greenBucket += c.getGreen();
+						blueBucket += c.getBlue();
+
+					}
+
+					pixelCount++;
+				}
+			}
+
+			// Convert Long into Integer
+			int r = (int) redBucket / (int) pixelCount;
+			int g = (int) greenBucket / (int) pixelCount;
+			int b = (int) blueBucket / (int) pixelCount;
+
+			System.out.println("c");
+
+			Color averageColor = new Color(r, g, b);
+
+			System.out.println("RGB");
+			System.out.println(averageColor);
+
+			return averageColor;
+		}
+
+		private Color getDominantColor(BufferedImage image) {
+
+			// Keep track of how many times a hue in a given bin appears
+			// in the image.
+			// Hue values range [0 .. 360), so dividing by 10, we get 36
+			// bins.
+			int[] colorBins = new int[36];
+
+			// The bin with the most colors. Initialize to -1 to prevent
+			// accidentally
+			// thinking the first bin holds the dominant color.
+			int maxBin = -1;
+
+			// Keep track of sum hue/saturation/value per hue bin, which
+			// we'll use to
+			// compute an average to for the dominant color.
+			float[] sumHue = new float[36];
+			float[] sumSat = new float[36];
+			float[] sumVal = new float[36];
+			float[] hsv = new float[3];
+
+			int height = image.getHeight();
+			int width = image.getWidth();
+
+			for (int row = 0; row < height; row++) {
+				for (int col = 0; col < width; col++) {
+
+					Color c = new Color(image.getRGB(col, row));
+
+					hsv = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(),
+							null);
+
+					// We compute the dominant color by putting colors
+					// in bins based on their hue.
+					int bin = (int) Math.floor(hsv[0] / 10.0f);
+
+					// Update the sum hue/saturation/value for this bin.
+					sumHue[bin] = sumHue[bin] + hsv[0];
+					sumSat[bin] = sumSat[bin] + hsv[1];
+					sumVal[bin] = sumVal[bin] + hsv[2];
+
+					// Increment the number of colors in this bin.
+					colorBins[bin]++;
+
+					// Keep track of the bin that holds the most colors.
+					if (maxBin < 0 || colorBins[bin] > colorBins[maxBin])
+						maxBin = bin;
+				}
+			}
+
+			// Return a color with the average hue/saturation/value of
+			// the bin with the most colors.
+			hsv[0] = sumHue[maxBin] / colorBins[maxBin];
+			hsv[1] = sumSat[maxBin] / colorBins[maxBin];
+			hsv[2] = sumVal[maxBin] / colorBins[maxBin];
+
+			int rgb = Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]);
+			Color rgbcolor = new Color(rgb);
+
+			System.out.println("HSV");
+			System.out.println(rgbcolor);
+
+			return rgbcolor;
+		}
 	};
 
 	public static void main(String[] args) {
