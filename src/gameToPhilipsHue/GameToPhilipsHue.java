@@ -29,9 +29,6 @@ public class GameToPhilipsHue {
 		public void run() {
 			try {
 
-				
-				
-				
 				GameToPhilipsHue.is_running = true;
 
 				long redBucket = 0;
@@ -50,7 +47,7 @@ public class GameToPhilipsHue {
 					if (!fileEntry.isDirectory()) {
 
 						if (i + 1 < number_of_files && number_of_files > 1) {
-							 fileEntry.delete();
+							fileEntry.delete();
 						}
 
 						i++;
@@ -63,24 +60,17 @@ public class GameToPhilipsHue {
 
 					java.net.URL url = new File(path).toURI().toURL();
 					BufferedImage image = ImageIO.read(url);
-					
-					
 
 					// Loop trough all the pixels of the image
 					for (int x = 0; x < image.getWidth(); x = x + 5) {
 						for (int y = 0; y < image.getHeight(); y = y + 5) {
-							
-							
 
 							Color c = new Color(image.getRGB(x, y));
 							float af[] = Color.RGBtoHSB(c.getRed(),
 									c.getGreen(), c.getBlue(), null);
 
-							// Ignore darker values
-							if ((af[1] * 100) > 10 && (af[2] * 100) > 20) // sat
-																			// /
-																			// bri
-							{
+							// Ignore darker values (sat / bri)
+							if ((af[1] * 100) > 10 && (af[2] * 100) > 20) {
 								redBucket += c.getRed();
 								greenBucket += c.getGreen();
 								blueBucket += c.getBlue();
@@ -89,38 +79,36 @@ public class GameToPhilipsHue {
 							}
 						}
 					}
-					
-					if(pixelCount >0) {
-					
 
-					// Convert Long into Integer
-					int r = (int) redBucket / (int) pixelCount;
-					int g = (int) greenBucket / (int) pixelCount;
-					int b = (int) blueBucket / (int) pixelCount;
+					if (pixelCount > 0) {
 
-					Color averageColor = new Color(r, g, b);
+						// Convert Long into Integer
+						int r = (int) redBucket / (int) pixelCount;
+						int g = (int) greenBucket / (int) pixelCount;
+						int b = (int) blueBucket / (int) pixelCount;
 
-					// RGB to xy
-					float[] xyColor = rgb_to_xy(averageColor);
-					
-//					System.out.println(xyColor);
+						Color averageColor = new Color(r, g, b);
 
-					// Set lights color
-					HueBridge bridge = new HueBridge(Config.ip, Config.username);
-					nl.q42.jue.Group all = bridge.getAllGroup();
-					StateUpdate update = new StateUpdate().turnOn().setXY(
-							xyColor[0], xyColor[1]);
-					bridge.setGroupState(all, update);
+						// RGB to xy
+						float[] xyColor = rgb_to_xy(averageColor);
 
-					
+						// System.out.println(xyColor);
 
-					// for (Light light : bridge.getLights()) {
-					// FullLight fullLight = bridge.getLight(light);
-					// bridge.setLightState(fullLight, update);
-					// }
+						// Set lights color
+						HueBridge bridge = new HueBridge(Config.ip,
+								Config.username);
+						nl.q42.jue.Group all = bridge.getAllGroup();
+						StateUpdate update = new StateUpdate().turnOn().setXY(
+								xyColor[0], xyColor[1]);
+						bridge.setGroupState(all, update);
+
+						// for (Light light : bridge.getLights()) {
+						// FullLight fullLight = bridge.getLight(light);
+						// bridge.setLightState(fullLight, update);
+						// }
 					}
-					
-//					System.out.println("set");
+
+					// System.out.println("set");
 				}
 
 				GameToPhilipsHue.is_running = false;
