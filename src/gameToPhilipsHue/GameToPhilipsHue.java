@@ -58,8 +58,8 @@ public class GameToPhilipsHue {
 					java.net.URL url = new File(path).toURI().toURL();
 					BufferedImage image = ImageIO.read(url);
 
-					// Avarage color
-					getAvarageColor(image);
+					// Average color
+//					getAverageColor(image);
 					
 					// Dominant color
 					Color rgbcolor = getDominantColor(image);
@@ -79,7 +79,6 @@ public class GameToPhilipsHue {
 					// bridge.setLightState(fullLight, update);
 					// }
 
-					// end New
 				}
 
 				GameToPhilipsHue.is_running = false;
@@ -132,7 +131,7 @@ public class GameToPhilipsHue {
 			return anArrays;
 		}
 
-		private Color getAvarageColor(BufferedImage image) {
+		private Color getAverageColor(BufferedImage image) {
 
 			long redBucket = 0;
 			long greenBucket = 0;
@@ -164,12 +163,10 @@ public class GameToPhilipsHue {
 			int g = (int) greenBucket / (int) pixelCount;
 			int b = (int) blueBucket / (int) pixelCount;
 
-			System.out.println("c");
-
 			Color averageColor = new Color(r, g, b);
 
-			System.out.println("RGB");
-			System.out.println(averageColor);
+//			System.out.println("RGB");
+//			System.out.println(averageColor);
 
 			return averageColor;
 		}
@@ -233,8 +230,8 @@ public class GameToPhilipsHue {
 			int rgb = Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]);
 			Color rgbcolor = new Color(rgb);
 
-			System.out.println("HSV");
-			System.out.println(rgbcolor);
+//			System.out.println("HSV");
+//			System.out.println(rgbcolor);
 
 			return rgbcolor;
 		}
