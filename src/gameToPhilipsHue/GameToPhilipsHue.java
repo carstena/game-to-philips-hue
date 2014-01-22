@@ -21,13 +21,17 @@ import nl.q42.jue.exceptions.ApiException;
 public class GameToPhilipsHue {
 
 	public static boolean is_running = false;
+	public static JLabel label1;
 
 	static Runnable hueRunnable = new Runnable() {
 		private float[] anArrays;
 
 		@Override
 		public void run() {
+
 			try {
+
+				long startTime = System.currentTimeMillis();
 
 				GameToPhilipsHue.is_running = true;
 
@@ -59,8 +63,8 @@ public class GameToPhilipsHue {
 					BufferedImage image = ImageIO.read(url);
 
 					// Average color
-//					getAverageColor(image);
-					
+					// getAverageColor(image);
+
 					// Dominant color
 					Color rgbcolor = getDominantColor(image);
 
@@ -83,11 +87,17 @@ public class GameToPhilipsHue {
 
 				GameToPhilipsHue.is_running = false;
 
+				long endTime = System.currentTimeMillis();
+				long duration = endTime - startTime;
+				
+				label1.setText(""+duration+" milliseconds");
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (ApiException e) {
 				e.printStackTrace();
 			}
+
 		}
 
 		private float[] rgb_to_xy(Color averageColor) {
@@ -165,8 +175,8 @@ public class GameToPhilipsHue {
 
 			Color averageColor = new Color(r, g, b);
 
-//			System.out.println("RGB");
-//			System.out.println(averageColor);
+			// System.out.println("RGB");
+			// System.out.println(averageColor);
 
 			return averageColor;
 		}
@@ -230,8 +240,8 @@ public class GameToPhilipsHue {
 			int rgb = Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]);
 			Color rgbcolor = new Color(rgb);
 
-//			System.out.println("HSV");
-//			System.out.println(rgbcolor);
+			// System.out.println("HSV");
+			// System.out.println(rgbcolor);
 
 			return rgbcolor;
 		}
@@ -269,7 +279,7 @@ public class GameToPhilipsHue {
 	}
 
 	public static void appGui() {
-		JFrame guiFrame = new JFrame();
+		JFrame guiFrame = new JFrame("App");
 
 		// make sure the program exits when the frame closes
 		guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -277,11 +287,12 @@ public class GameToPhilipsHue {
 		guiFrame.setSize(400, 250);
 
 		// Add label
-		JLabel label1;
+		
 		label1 = new JLabel("<html>Running on bridge: " + Config.ip + " "
 				+ Config.path + "<br>  every " + Config.refreshrate / 1000
 				+ "s</html>");
 		guiFrame.add(label1);
+		
 
 		// make sure the JFrame is visible
 		guiFrame.setVisible(true);
