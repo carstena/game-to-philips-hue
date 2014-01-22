@@ -48,7 +48,7 @@ public class GameToPhilipsHue {
 					if (!fileEntry.isDirectory()) {
 
 						if (i + 1 < number_of_files && number_of_files > 1) {
-							fileEntry.delete();
+//							fileEntry.delete();
 						}
 
 						i++;
