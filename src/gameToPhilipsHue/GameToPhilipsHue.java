@@ -14,7 +14,9 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import nl.q42.jue.FullLight;
 import nl.q42.jue.HueBridge;
+import nl.q42.jue.Light;
 import nl.q42.jue.StateUpdate;
 import nl.q42.jue.exceptions.ApiException;
 
@@ -26,7 +28,6 @@ public class GameToPhilipsHue {
 	static Runnable hueRunnable = new Runnable() {
 		private float[] anArrays;
 
-		@Override
 		public void run() {
 
 			try {
@@ -48,7 +49,7 @@ public class GameToPhilipsHue {
 					if (!fileEntry.isDirectory()) {
 
 						if (i + 1 < number_of_files && number_of_files > 1) {
-//							fileEntry.delete();
+							fileEntry.delete();
 						}
 
 						i++;
@@ -72,25 +73,27 @@ public class GameToPhilipsHue {
 					float[] xyColor = rgb_to_xy(rgbcolor);
 
 					// Set lights color
+					// Groups commands have a maximum of 1 per second
 					HueBridge bridge = new HueBridge(Config.ip, Config.username);
-					nl.q42.jue.Group all = bridge.getAllGroup();
+					// nl.q42.jue.Group all = bridge.getAllGroup();
 					StateUpdate update = new StateUpdate().turnOn().setXY(
 							xyColor[0], xyColor[1]);
-					bridge.setGroupState(all, update);
+					// bridge.setGroupState(all, update);
 
-					// for (Light light : bridge.getLights()) {
-					// FullLight fullLight = bridge.getLight(light);
-					// bridge.setLightState(fullLight, update);
-					// }
-
+					// Set lights. Lights commands a have a max of around 10
+					// commands per second
+					for (Light light : bridge.getLights()) {
+						FullLight fullLight = bridge.getLight(light);
+						bridge.setLightState(fullLight, update);
+					}
 				}
 
 				GameToPhilipsHue.is_running = false;
 
 				long endTime = System.currentTimeMillis();
 				long duration = endTime - startTime;
-				
-				label1.setText(""+duration+" milliseconds");
+
+				label1.setText("" + duration + " milliseconds");
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -141,45 +144,45 @@ public class GameToPhilipsHue {
 			return anArrays;
 		}
 
-		private Color getAverageColor(BufferedImage image) {
-
-			long redBucket = 0;
-			long greenBucket = 0;
-			long blueBucket = 0;
-			long pixelCount = 0;
-
-			// Loop trough all the pixels of the image
-			for (int x = 0; x < image.getWidth(); x = x + 5) {
-				for (int y = 0; y < image.getHeight(); y = y + 5) {
-
-					Color c = new Color(image.getRGB(x, y));
-					float af[] = Color.RGBtoHSB(c.getRed(), c.getGreen(),
-							c.getBlue(), null);
-
-					// Ignore darker values (sat / bri)
-					if ((af[1] * 100) > 10 && (af[2] * 100) > 20) {
-						redBucket += c.getRed();
-						greenBucket += c.getGreen();
-						blueBucket += c.getBlue();
-
-					}
-
-					pixelCount++;
-				}
-			}
-
-			// Convert Long into Integer
-			int r = (int) redBucket / (int) pixelCount;
-			int g = (int) greenBucket / (int) pixelCount;
-			int b = (int) blueBucket / (int) pixelCount;
-
-			Color averageColor = new Color(r, g, b);
-
-			// System.out.println("RGB");
-			// System.out.println(averageColor);
-
-			return averageColor;
-		}
+		// private Color getAverageColor(BufferedImage image) {
+		//
+		// long redBucket = 0;
+		// long greenBucket = 0;
+		// long blueBucket = 0;
+		// long pixelCount = 0;
+		//
+		// // Loop trough all the pixels of the image
+		// for (int x = 0; x < image.getWidth(); x = x + 5) {
+		// for (int y = 0; y < image.getHeight(); y = y + 5) {
+		//
+		// Color c = new Color(image.getRGB(x, y));
+		// float af[] = Color.RGBtoHSB(c.getRed(), c.getGreen(),
+		// c.getBlue(), null);
+		//
+		// // Ignore darker values (sat / bri)
+		// if ((af[1] * 100) > 10 && (af[2] * 100) > 20) {
+		// redBucket += c.getRed();
+		// greenBucket += c.getGreen();
+		// blueBucket += c.getBlue();
+		//
+		// }
+		//
+		// pixelCount++;
+		// }
+		// }
+		//
+		// // Convert Long into Integer
+		// int r = (int) redBucket / (int) pixelCount;
+		// int g = (int) greenBucket / (int) pixelCount;
+		// int b = (int) blueBucket / (int) pixelCount;
+		//
+		// Color averageColor = new Color(r, g, b);
+		//
+		// // System.out.println("RGB");
+		// // System.out.println(averageColor);
+		//
+		// return averageColor;
+		// }
 
 		private Color getDominantColor(BufferedImage image) {
 
@@ -287,12 +290,11 @@ public class GameToPhilipsHue {
 		guiFrame.setSize(400, 250);
 
 		// Add label
-		
+
 		label1 = new JLabel("<html>Running on bridge: " + Config.ip + " "
 				+ Config.path + "<br>  every " + Config.refreshrate / 1000
 				+ "s</html>");
 		guiFrame.add(label1);
-		
 
 		// make sure the JFrame is visible
 		guiFrame.setVisible(true);
