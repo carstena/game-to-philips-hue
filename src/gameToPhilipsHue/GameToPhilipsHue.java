@@ -14,6 +14,8 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import com.philips.lighting.hue.sdk.utilities.PHUtilities;
+
 import nl.q42.jue.FullLight;
 import nl.q42.jue.HueBridge;
 import nl.q42.jue.Light;
@@ -26,13 +28,16 @@ public class GameToPhilipsHue {
 	public static JLabel label1;
 
 	static Runnable hueRunnable = new Runnable() {
-		private float[] anArrays;
-
+		
 		public void run() {
 
 			try {
 
 				long startTime = System.currentTimeMillis();
+
+				int red = 0;
+				int green = 0;
+				int blue = 0;
 
 				GameToPhilipsHue.is_running = true;
 
@@ -67,24 +72,35 @@ public class GameToPhilipsHue {
 					// getAverageColor(image);
 
 					// Dominant color
-					Color rgbcolor = getDominantColor(image);
+					Color rgbcolor = getDominantColor(image, true);
 
 					// Convert RGB to XY
-					float[] xyColor = rgb_to_xy(rgbcolor);
+					float xyColor[] = PHUtilities.calculateXYFromRGB(
+							rgbcolor.getRed(), rgbcolor.getGreen(),
+							rgbcolor.getBlue(), "LCT001"); // @todo modelid must be a var
 
-					// Set lights color
-					// Groups commands have a maximum of 1 per second
-					HueBridge bridge = new HueBridge(Config.ip, Config.username);
-					// nl.q42.jue.Group all = bridge.getAllGroup();
-					StateUpdate update = new StateUpdate().turnOn().setXY(
-							xyColor[0], xyColor[1]);
-					// bridge.setGroupState(all, update);
+					if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0
+							&& rgbcolor.getBlue() > 0) {
 
-					// Set lights. Lights commands a have a max of around 10
-					// commands per second
-					for (Light light : bridge.getLights()) {
-						FullLight fullLight = bridge.getLight(light);
-						bridge.setLightState(fullLight, update);
+						red = rgbcolor.getRed();
+						green = rgbcolor.getGreen();
+						blue = rgbcolor.getBlue();
+
+						// Set lights color
+						// Groups commands have a maximum of 1 per second
+						HueBridge bridge = new HueBridge(Config.ip,
+								Config.username);
+						// nl.q42.jue.Group all = bridge.getAllGroup();
+						StateUpdate update = new StateUpdate().turnOn().setXY(
+								xyColor[0], xyColor[1]);
+						// bridge.setGroupState(all, update);
+
+						// Set lights. Lights commands a have a max of around 10
+						// commands per second
+						for (Light light : bridge.getLights()) {
+							FullLight fullLight = bridge.getLight(light);
+							bridge.setLightState(fullLight, update);
+						}
 					}
 				}
 
@@ -93,7 +109,9 @@ public class GameToPhilipsHue {
 				long endTime = System.currentTimeMillis();
 				long duration = endTime - startTime;
 
-				label1.setText("" + duration + " milliseconds");
+				label1.setText("<html>&nbsp;&nbsp;" + duration
+						+ " milliseconds<br>&nbsp;&nbsp;R:" + red + " G:"
+						+ green + " B:" + blue + "<br></html>");
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -101,47 +119,6 @@ public class GameToPhilipsHue {
 				e.printStackTrace();
 			}
 
-		}
-
-		private float[] rgb_to_xy(Color averageColor) {
-			// Get the RGB values from your color object and convert them to
-			// be between 0 and 1
-			float red = (float) (averageColor.getRed() / 225.0);
-			float green = (float) (averageColor.getGreen() / 225.0);
-			float blue = (float) (averageColor.getBlue() / 225.0);
-
-			// Apply a gamma correction to the RGB values, which makes the
-			// color more vivid and more the like the color displayed on the
-			// screen of your device.
-			// This gamma correction is also applied to the screen of your
-			// computer or phone, thus we need this to create the same color
-			// on the light as on screen.
-			// This is done by the following formulas:
-			float red1 = (float) ((red > 0.04045f) ? Math.pow((red + 0.055f)
-					/ (1.0f + 0.055f), 2.4f) : (red / 12.92f));
-			float green1 = (float) ((green > 0.04045f) ? Math.pow(
-					(green + 0.055f) / (1.0f + 0.055f), 2.4f)
-					: (green / 12.92f));
-			float blue1 = (float) ((blue > 0.04045f) ? Math.pow((blue + 0.055f)
-					/ (1.0f + 0.055f), 2.4f) : (blue / 12.92f));
-
-			// Convert the RGB values to XYZ using the Wide RGB D65
-			// conversion formula
-			float X = red1 * 0.649926f + green1 * 0.103455f + blue1 * 0.197109f;
-			float Y = red1 * 0.234327f + green1 * 0.743075f + blue1 * 0.022598f;
-			float Z = red1 * 0.0000000f + green1 * 0.053077f + blue1
-					* 1.035763f;
-
-			float x = X / (X + Y + Z);
-			float y = Y / (X + Y + Z);
-
-			// allocates memory for 10 integers
-			anArrays = new float[2];
-
-			anArrays[0] = x;
-			anArrays[1] = y;
-
-			return anArrays;
 		}
 
 		// private Color getAverageColor(BufferedImage image) {
@@ -178,13 +155,11 @@ public class GameToPhilipsHue {
 		//
 		// Color averageColor = new Color(r, g, b);
 		//
-		// // System.out.println("RGB");
-		// // System.out.println(averageColor);
-		//
 		// return averageColor;
 		// }
 
-		private Color getDominantColor(BufferedImage image) {
+		private Color getDominantColor(BufferedImage image,
+				boolean applyThreshold) {
 
 			// Keep track of how many times a hue in a given bin appears
 			// in the image.
@@ -216,6 +191,11 @@ public class GameToPhilipsHue {
 					hsv = Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(),
 							null);
 
+					// If a threshold is applied, ignore arbitrarily chosen
+					// values for "white" and "black".
+					if (applyThreshold && (hsv[1] <= 0.35f || hsv[2] <= 0.35f))
+						continue;
+
 					// We compute the dominant color by putting colors
 					// in bins based on their hue.
 					int bin = (int) Math.floor(hsv[0] / 10.0f);
@@ -234,6 +214,11 @@ public class GameToPhilipsHue {
 				}
 			}
 
+			// maxBin may never get updated if the image holds only transparent
+			// and/or black/white pixels.
+			if (maxBin < 0)
+				return new Color(0, 0, 0, 0);
+
 			// Return a color with the average hue/saturation/value of
 			// the bin with the most colors.
 			hsv[0] = sumHue[maxBin] / colorBins[maxBin];
@@ -242,9 +227,6 @@ public class GameToPhilipsHue {
 
 			int rgb = Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]);
 			Color rgbcolor = new Color(rgb);
-
-			// System.out.println("HSV");
-			// System.out.println(rgbcolor);
 
 			return rgbcolor;
 		}
@@ -291,9 +273,7 @@ public class GameToPhilipsHue {
 
 		// Add label
 
-		label1 = new JLabel("<html>Running on bridge: " + Config.ip + " "
-				+ Config.path + "<br>  every " + Config.refreshrate / 1000
-				+ "s</html>");
+		label1 = new JLabel("hello");
 		guiFrame.add(label1);
 
 		// make sure the JFrame is visible
@@ -306,5 +286,4 @@ public class GameToPhilipsHue {
 		public static String path;
 		public static int refreshrate;
 	}
-
 }
