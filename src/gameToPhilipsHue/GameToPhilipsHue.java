@@ -87,9 +87,9 @@ public class GameToPhilipsHue {
 						blue = rgbcolor.getBlue();
 
 						// Set lights color
-						// Groups commands have a maximum of 1 per second
 						HueBridge bridge = new HueBridge(Config.ip,
 								Config.username);
+						// Groups commands have a maximum of 1 per second
 						// nl.q42.jue.Group all = bridge.getAllGroup();
 						StateUpdate update = new StateUpdate().turnOn().setXY(
 								xyColor[0], xyColor[1]);
