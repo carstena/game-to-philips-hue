@@ -19,7 +19,7 @@ The program reads the specified folder for the latest image. Then it calculates 
 * Download and extract `game-to-hue.zip`
 * Create a file named `config.properties` (see example below)
 * Run `game-to-hue.jar`
-* `username` username that is authorized with your bridge
+* `username` username that is authorized with your bridge (see: http://developers.meethue.com/gettingstarted.html)
 * `ip` ip address of your bridge (discover ip here: http://www.meethue.com/api/nupnp)
 * `refreshrate` refresh rate in milliseconds. Every 500 miliseconds should be fine. Try some values, minimal 100 ms.
 * `path` path to the folder with images (screenshots)

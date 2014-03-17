@@ -6,15 +6,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-
-import com.philips.lighting.hue.sdk.utilities.PHUtilities;
 
 import nl.q42.jue.FullLight;
 import nl.q42.jue.HueBridge;
@@ -22,96 +20,106 @@ import nl.q42.jue.Light;
 import nl.q42.jue.StateUpdate;
 import nl.q42.jue.exceptions.ApiException;
 
+import com.philips.lighting.hue.sdk.utilities.PHUtilities;
+
 public class GameToPhilipsHue {
 
-	public static boolean is_running = false;
-	public static JLabel label1;
+	public static boolean is_processing = false;
+	public static boolean is_activated = false;
 
 	static Runnable hueRunnable = new Runnable() {
-		
+
 		public void run() {
 
 			try {
 
-				long startTime = System.currentTimeMillis();
+				if (GameToPhilipsHue.is_processing == false
+						&& GameToPhilipsHue.is_activated == true) {
+					GameToPhilipsHue.is_processing = true;
 
-				int red = 0;
-				int green = 0;
-				int blue = 0;
+					long startTime = System.currentTimeMillis();
 
-				GameToPhilipsHue.is_running = true;
+					int red = 0;
+					int green = 0;
+					int blue = 0;
 
-				// Read images
-				String folder_path = Config.path;
-				final File folder = new File(folder_path);
+					// Read images
+					String folder_path = Config.path;
+					final File folder = new File(folder_path);
 
-				String path = null;
+					String path = null;
 
-				int number_of_files = folder.list().length;
-				int i = 0;
+					int number_of_files = folder.list().length;
+					int i = 0;
 
-				for (final File fileEntry : folder.listFiles()) {
-					if (!fileEntry.isDirectory()) {
+					for (final File fileEntry : folder.listFiles()) {
+						if (!fileEntry.isDirectory()) {
 
-						if (i + 1 < number_of_files && number_of_files > 1) {
-							fileEntry.delete();
-						}
+							if (i + 1 < number_of_files && number_of_files > 1) {
+								 fileEntry.delete();
+							}
 
-						i++;
+							i++;
 
-						path = folder_path + fileEntry.getName();
-					}
-				}
-
-				if (number_of_files > 0) {
-
-					java.net.URL url = new File(path).toURI().toURL();
-					BufferedImage image = ImageIO.read(url);
-
-					// Average color
-					// getAverageColor(image);
-
-					// Dominant color
-					Color rgbcolor = getDominantColor(image, true);
-
-					// Convert RGB to XY
-					float xyColor[] = PHUtilities.calculateXYFromRGB(
-							rgbcolor.getRed(), rgbcolor.getGreen(),
-							rgbcolor.getBlue(), "LCT001"); // @todo modelid must be a var
-
-					if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0
-							&& rgbcolor.getBlue() > 0) {
-
-						red = rgbcolor.getRed();
-						green = rgbcolor.getGreen();
-						blue = rgbcolor.getBlue();
-
-						// Set lights color
-						HueBridge bridge = new HueBridge(Config.ip,
-								Config.username);
-						// Groups commands have a maximum of 1 per second
-						// nl.q42.jue.Group all = bridge.getAllGroup();
-						StateUpdate update = new StateUpdate().turnOn().setXY(
-								xyColor[0], xyColor[1]);
-						// bridge.setGroupState(all, update);
-
-						// Set lights. Lights commands a have a max of around 10
-						// commands per second
-						for (Light light : bridge.getLights()) {
-							FullLight fullLight = bridge.getLight(light);
-							bridge.setLightState(fullLight, update);
+							path = folder_path + fileEntry.getName();
 						}
 					}
+
+					if (number_of_files > 0) {
+
+						java.net.URL url = new File(path).toURI().toURL();
+						BufferedImage image = ImageIO.read(url);
+
+						// Average color
+						// getAverageColor(image);
+
+						// Dominant color
+						Color rgbcolor = getDominantColor(image, true);
+
+						// Convert RGB to XY
+						float xyColor[] = PHUtilities.calculateXYFromRGB(
+								rgbcolor.getRed(), rgbcolor.getGreen(),
+								rgbcolor.getBlue(), "LCT001"); // @todo modelid
+																// must
+																// be a var
+
+						if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0
+								&& rgbcolor.getBlue() > 0) {
+
+							red = rgbcolor.getRed();
+							green = rgbcolor.getGreen();
+							blue = rgbcolor.getBlue();
+
+							// Set lights color
+							HueBridge bridge = new HueBridge(Config.ip,
+									Config.username);
+							// Groups commands have a maximum of 1 per second
+							// nl.q42.jue.Group all = bridge.getAllGroup();
+							StateUpdate update = new StateUpdate().turnOn()
+									.setXY(xyColor[0], xyColor[1]);
+							// bridge.setGroupState(all, update);
+
+							// Set lights. Lights commands a have a max of
+							// around 10
+							// commands per second
+							for (Light light : bridge.getLights()) {
+								FullLight fullLight = bridge.getLight(light);
+								bridge.setLightState(fullLight, update);
+							}
+						}
+					}
+
+					GameToPhilipsHue.is_processing = false;
+
+					long endTime = System.currentTimeMillis();
+					long duration = endTime - startTime;
+
+					UI.lblProcessTimeValue.setText("" + duration + "ms");
+
+					// "<html>&nbsp;&nbsp;" + duration
+					// + " milliseconds<br>&nbsp;&nbsp;R:" + red + " G:"
+					// + green + " B:" + blue + "<br></html>");
 				}
-
-				GameToPhilipsHue.is_running = false;
-
-				long endTime = System.currentTimeMillis();
-				long duration = endTime - startTime;
-
-				label1.setText("<html>&nbsp;&nbsp;" + duration
-						+ " milliseconds<br>&nbsp;&nbsp;R:" + red + " G:"
-						+ green + " B:" + blue + "<br></html>");
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -120,43 +128,6 @@ public class GameToPhilipsHue {
 			}
 
 		}
-
-		// private Color getAverageColor(BufferedImage image) {
-		//
-		// long redBucket = 0;
-		// long greenBucket = 0;
-		// long blueBucket = 0;
-		// long pixelCount = 0;
-		//
-		// // Loop trough all the pixels of the image
-		// for (int x = 0; x < image.getWidth(); x = x + 5) {
-		// for (int y = 0; y < image.getHeight(); y = y + 5) {
-		//
-		// Color c = new Color(image.getRGB(x, y));
-		// float af[] = Color.RGBtoHSB(c.getRed(), c.getGreen(),
-		// c.getBlue(), null);
-		//
-		// // Ignore darker values (sat / bri)
-		// if ((af[1] * 100) > 10 && (af[2] * 100) > 20) {
-		// redBucket += c.getRed();
-		// greenBucket += c.getGreen();
-		// blueBucket += c.getBlue();
-		//
-		// }
-		//
-		// pixelCount++;
-		// }
-		// }
-		//
-		// // Convert Long into Integer
-		// int r = (int) redBucket / (int) pixelCount;
-		// int g = (int) greenBucket / (int) pixelCount;
-		// int b = (int) blueBucket / (int) pixelCount;
-		//
-		// Color averageColor = new Color(r, g, b);
-		//
-		// return averageColor;
-		// }
 
 		private Color getDominantColor(BufferedImage image,
 				boolean applyThreshold) {
@@ -232,7 +203,19 @@ public class GameToPhilipsHue {
 		}
 	};
 
+	public static void start() {
+		GameToPhilipsHue.is_activated = true;
+	}
+
+	public static void stop() {
+		GameToPhilipsHue.is_processing = false;
+		GameToPhilipsHue.is_activated = false;
+	}
+
 	public static void main(String[] args) {
+
+		UI gui = new UI();
+		gui.initialize();
 
 		Properties prop = new Properties();
 
@@ -247,37 +230,32 @@ public class GameToPhilipsHue {
 					.getProperty("refreshrate"));
 			Config.path = prop.getProperty("path");
 
+			emptyFolder();
+
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
-		if (!GameToPhilipsHue.is_running) {
-
-			appGui();
-
-			// Schedule periodic task
-			ScheduledExecutorService executor = Executors
-					.newScheduledThreadPool(1);
-			executor.scheduleAtFixedRate(hueRunnable, 0, Config.refreshrate,
-					TimeUnit.MILLISECONDS);
-		}
+		// Schedule periodic task
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+		executor.scheduleAtFixedRate(hueRunnable, 0, Config.refreshrate,
+				TimeUnit.MILLISECONDS);
 	}
 
-	public static void appGui() {
-		JFrame guiFrame = new JFrame("App");
+	private static void emptyFolder() {
 
-		// make sure the program exits when the frame closes
-		guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		guiFrame.setTitle("Game to Philips Hue");
-		guiFrame.setSize(400, 250);
+		String folder_path = Config.path;
+		final File folder = new File(folder_path);
+		String[] number_of_files = folder.list();
 
-		// Add label
+		if (number_of_files != null) {
+			for (final File fileEntry : folder.listFiles()) {
+				if (!fileEntry.isDirectory()) {
 
-		label1 = new JLabel("hello");
-		guiFrame.add(label1);
-
-		// make sure the JFrame is visible
-		guiFrame.setVisible(true);
+					fileEntry.delete();
+				}
+			}
+		}
 	}
 
 	public static class Config {
