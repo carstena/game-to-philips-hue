@@ -1,6 +1,5 @@
 package gameToPhilipsHue;
 
-import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -17,23 +16,14 @@ import java.awt.Font;
 
 public class UI {
 
-	private JFrame frame;
+	JFrame frame;
 	static JLabel lblProcessTimeValue = new JLabel("");
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					UI window = new UI();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		
 	}
 
 	/**
@@ -92,7 +82,7 @@ public class UI {
 		lblProcessTime.setBounds(24, 135, 172, 16);
 		panelCommon.add(lblProcessTime);
 
-		lblProcessTimeValue.setBounds(20, 159, 150, 16);
+		lblProcessTimeValue.setBounds(20, 159, 450, 16);
 		panelCommon.add(lblProcessTimeValue);
 
 		JPanel panel = new JPanel();
@@ -117,8 +107,5 @@ public class UI {
 		});
 		frame.getContentPane().add(toggleBtn,
 				"cell 0 3,alignx center,aligny top");
-
-		frame.setVisible(true);
-
 	}
 }

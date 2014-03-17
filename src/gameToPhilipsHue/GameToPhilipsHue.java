@@ -24,6 +24,7 @@ import com.philips.lighting.hue.sdk.utilities.PHUtilities;
 
 public class GameToPhilipsHue {
 
+	protected static final BufferedImage image = null;
 	public static boolean is_processing = false;
 	public static boolean is_activated = false;
 
@@ -37,6 +38,8 @@ public class GameToPhilipsHue {
 						&& GameToPhilipsHue.is_activated == true) {
 					GameToPhilipsHue.is_processing = true;
 
+					BufferedImage image = null;
+
 					long startTime = System.currentTimeMillis();
 
 					int red = 0;
@@ -49,76 +52,78 @@ public class GameToPhilipsHue {
 
 					String path = null;
 
-					int number_of_files = folder.list().length;
 					int i = 0;
 
-					for (final File fileEntry : folder.listFiles()) {
-						if (!fileEntry.isDirectory()) {
+					if (folder.list().length > 0) {
+						for (final File fileEntry : folder.listFiles()) {
+							if (!fileEntry.isDirectory()
+									&& !fileEntry.isHidden()) {
 
-							if (i + 1 < number_of_files && number_of_files > 1) {
-								 fileEntry.delete();
+								if (i == 0) {
+									path = folder_path + fileEntry.getName();
+									java.net.URL url = new File(path).toURI()
+											.toURL();
+
+									image = ImageIO.read(url);
+								}
+
+								i++;
 							}
+						}
 
-							i++;
+						if (image != null) { // check if file is image
 
-							path = folder_path + fileEntry.getName();
+							// Average color
+							// getAverageColor(image);
+
+							// Dominant color
+							Color rgbcolor = getDominantColor(image, true);
+
+							if (rgbcolor.getRed() > 0
+									&& rgbcolor.getGreen() > 0
+									&& rgbcolor.getBlue() > 0) {
+
+								// Convert RGB to XY
+								float xyColor[] = PHUtilities
+										.calculateXYFromRGB(rgbcolor.getRed(),
+												rgbcolor.getGreen(),
+												rgbcolor.getBlue(), "LCT001"); // @todo
+																				// modelid
+																				// must
+																				// be
+																				// a
+																				// var
+
+								red = rgbcolor.getRed();
+								green = rgbcolor.getGreen();
+								blue = rgbcolor.getBlue();
+
+								// Set lights color
+								HueBridge bridge = new HueBridge(Config.ip,
+										Config.username);
+								StateUpdate update = new StateUpdate().turnOn()
+										.setXY(xyColor[0], xyColor[1]);
+
+								// Set lights. Lights commands a have a max of
+								// around 10
+								// commands per second
+								for (Light light : bridge.getLights()) {
+									FullLight fullLight = bridge
+											.getLight(light);
+									bridge.setLightState(fullLight, update);
+								}
+							}
 						}
 					}
 
-					if (number_of_files > 0) {
-
-						java.net.URL url = new File(path).toURI().toURL();
-						BufferedImage image = ImageIO.read(url);
-
-						// Average color
-						// getAverageColor(image);
-
-						// Dominant color
-						Color rgbcolor = getDominantColor(image, true);
-
-						// Convert RGB to XY
-						float xyColor[] = PHUtilities.calculateXYFromRGB(
-								rgbcolor.getRed(), rgbcolor.getGreen(),
-								rgbcolor.getBlue(), "LCT001"); // @todo modelid
-																// must
-																// be a var
-
-						if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0
-								&& rgbcolor.getBlue() > 0) {
-
-							red = rgbcolor.getRed();
-							green = rgbcolor.getGreen();
-							blue = rgbcolor.getBlue();
-
-							// Set lights color
-							HueBridge bridge = new HueBridge(Config.ip,
-									Config.username);
-							// Groups commands have a maximum of 1 per second
-							// nl.q42.jue.Group all = bridge.getAllGroup();
-							StateUpdate update = new StateUpdate().turnOn()
-									.setXY(xyColor[0], xyColor[1]);
-							// bridge.setGroupState(all, update);
-
-							// Set lights. Lights commands a have a max of
-							// around 10
-							// commands per second
-							for (Light light : bridge.getLights()) {
-								FullLight fullLight = bridge.getLight(light);
-								bridge.setLightState(fullLight, update);
-							}
-						}
-					}
-
+					emptyFolder();
 					GameToPhilipsHue.is_processing = false;
 
 					long endTime = System.currentTimeMillis();
 					long duration = endTime - startTime;
 
-					UI.lblProcessTimeValue.setText("" + duration + "ms");
-
-					// "<html>&nbsp;&nbsp;" + duration
-					// + " milliseconds<br>&nbsp;&nbsp;R:" + red + " G:"
-					// + green + " B:" + blue + "<br></html>");
+					UI.lblProcessTimeValue.setText("" + duration + "ms " + "R:"
+							+ red + "G:" + green + "B:" + blue + "|" + path);
 				}
 
 			} catch (IOException e) {
@@ -204,7 +209,10 @@ public class GameToPhilipsHue {
 	};
 
 	public static void start() {
+
+		emptyFolder();
 		GameToPhilipsHue.is_activated = true;
+
 	}
 
 	public static void stop() {
@@ -216,6 +224,7 @@ public class GameToPhilipsHue {
 
 		UI gui = new UI();
 		gui.initialize();
+		gui.frame.setVisible(true);
 
 		Properties prop = new Properties();
 
@@ -245,6 +254,7 @@ public class GameToPhilipsHue {
 	private static void emptyFolder() {
 
 		String folder_path = Config.path;
+
 		final File folder = new File(folder_path);
 		String[] number_of_files = folder.list();
 
