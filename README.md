@@ -1,7 +1,7 @@
 Game to Philips Hue
 ===================
 
-This is a program for Philips Hue that grabs of an image from a directory. It's build to work in combination with a screencapture program (for games).
+Extend your game experience with Philips Hue. This is a program for Philips Hue that grabs of an image (screenshot) from a directory. It's build to work in combination with a screencapture programs like Bandicam, Fraps etc.
 
 ## Screencapture programs
 Setup the screencapture program to take a screenshot every 1 second (or less) and save it to a folder. Use the defined folder path in the config.properties file.

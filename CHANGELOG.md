@@ -1,6 +1,6 @@
 # Game to Philips Hue changelog
 
-## 1.0 beta
+## 1.0
 Changes:
 
 	- Replaced the function getAverageColor with getDominantColor. Which improves the matching of the color of the screenshot image.
