@@ -6,7 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -28,6 +29,7 @@ public class HueConnector {
 	protected static final BufferedImage image = null;
 	public static boolean is_processing = false;
 	public static boolean is_activated = false;
+	public static String current_file;
 	public static HueBridge bridge;
 
 	static Runnable hueRunnable = new Runnable() {
@@ -50,19 +52,38 @@ public class HueConnector {
 
 					String path = null;
 
-					int i = 0;
+					
+					
+					File[] files = folder.listFiles();
 
-					if (folder.list().length > 0) {
-						for (final File fileEntry : folder.listFiles()) {
+					Arrays.sort( files, new Comparator<File>() {
+					    public int compare( File a, File b ) {
+					        return (int) (b.lastModified() - a.lastModified());
+					    }
+					});
+
+					if (files.length > 0) {
+						int i = 0;
+						for (final File fileEntry : files) {
 							if (!fileEntry.isDirectory()
 									&& !fileEntry.isHidden()) {
 
 								if (i == 0) {
 									path = folder_path + fileEntry.getName();
+									current_file = fileEntry.getName();
 									java.net.URL url = new File(path).toURI()
 											.toURL();
 
 									image = ImageIO.read(url);
+								} 
+								
+								if(fileEntry.exists() && fileEntry.canRead() && !fileEntry.getName().equals(current_file)) {
+									try {
+										fileEntry.delete();
+									} catch (Exception e) {
+										EpicGameLighting.lblProcessError
+												.setText(e.getMessage());
+									}
 								}
 
 								i++;
@@ -95,7 +116,7 @@ public class HueConnector {
 
 								colorAndSaturationArray.add(colorAndSaturation);
 							}
-						
+
 							for (int j = 0; j < selectedLightsList.size(); j++) {
 
 								Object[] colorAndSaturation = (Object[]) colorAndSaturationArray
@@ -143,8 +164,10 @@ public class HueConnector {
 						}
 					}
 
-					emptyFolder();
+					// Reset
+
 					HueConnector.is_processing = false;
+					current_file = null;
 
 					long endTime = System.currentTimeMillis();
 					long duration = endTime - startTime;
@@ -153,12 +176,10 @@ public class HueConnector {
 							+ "ms |" + path);
 				}
 
-			} catch (IOException e) {
+			} catch (Exception e) {
 				EpicGameLighting.lblProcessError.setText(e.getMessage());
 				HueConnector.stop();
-			} catch (ApiException e) {
-				EpicGameLighting.lblProcessError.setText(e.getMessage());
-				HueConnector.stop();
+				HueConnector.start();
 			}
 		}
 
@@ -287,9 +308,6 @@ public class HueConnector {
 					.getProperty("refreshrate"));
 			Config.path = prop.getProperty("path");
 
-			// Empty folder
-			emptyFolder();
-
 			bridge = new HueBridge(Config.ip, Config.username);
 
 			// Get Lights
@@ -311,19 +329,25 @@ public class HueConnector {
 
 	private static void emptyFolder() {
 
-		String folder_path = Config.path;
+		try {
 
-		final File folder = new File(folder_path);
-		String[] number_of_files = folder.list();
+			String folder_path = Config.path;
 
-		if (number_of_files != null) {
-			for (final File fileEntry : folder.listFiles()) {
-				if (!fileEntry.isDirectory()) {
+			final File folder = new File(folder_path);
+			String[] number_of_files = folder.list();
 
-					 fileEntry.delete();
+			if (number_of_files != null) {
+				for (final File fileEntry : folder.listFiles()) {
+					if (!fileEntry.isDirectory() && fileEntry.exists()) {
+						fileEntry.delete();
+					}
 				}
 			}
+		} catch (Exception e) {
+			EpicGameLighting.lblProcessError.setText(e.getMessage());
 		}
+
+		HueConnector.is_processing = false;
 	}
 
 	public static class Config {
