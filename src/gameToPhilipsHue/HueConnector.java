@@ -5,6 +5,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -68,77 +71,74 @@ public class HueConnector {
 
 						if (image != null) { // check if file is image
 
-							// Get Dominant color
-							Object[] colorAndSaturation = getDominantColor(
-									image, true, 1);
-							Color rgbcolor = (Color) colorAndSaturation[0];
-							Object saturation = colorAndSaturation[1];
+							// Set selected Lights in List
+							// TODO: move to start function
+							List<String> selectedLightsList = new ArrayList<String>();
 
-							if (rgbcolor.getRed() > 0
-									&& rgbcolor.getGreen() > 0
-									&& rgbcolor.getBlue() > 0) {
+							selectedLightsList.add(String
+									.valueOf(EpicGameLighting.comboBox_area_1
+											.getSelectedItem()));
+							selectedLightsList.add(String
+									.valueOf(EpicGameLighting.comboBox_area_2
+											.getSelectedItem()));
+							selectedLightsList.add(String
+									.valueOf(EpicGameLighting.comboBox_area_3
+											.getSelectedItem()));
 
-								// Convert RGB to XY
-								// TODO model id (LCT001) must be a variable
-								float xyColor[] = PHUtilities
-										.calculateXYFromRGB(rgbcolor.getRed(),
-												rgbcolor.getGreen(),
-												rgbcolor.getBlue(), "LCT001");
+							// Get Image color in three vertical parts
+							List<Object> colorAndSaturationArray = new ArrayList<Object>();
+							for (i = 1; i <= 3; i++) {
 
-								// Set lights color
+								// Get Dominant color from image part
+								Object[] colorAndSaturation = getDominantColor(
+										image, true, i);
 
-								StateUpdate update = new StateUpdate().turnOn()
-										.setXY(xyColor[0], xyColor[1])
-										.setBrightness( (Integer) saturation);
+								colorAndSaturationArray.add(colorAndSaturation);
+							}
+						
+							for (int j = 0; j < selectedLightsList.size(); j++) {
 
-								// Set lights. Lights commands a have a max of
-								// around 10
-								// commands per second
+								Object[] colorAndSaturation = (Object[]) colorAndSaturationArray
+										.get(j);
 
-								// TODO rewrite this ugly code!
+								Color rgbcolor = (Color) colorAndSaturation[0];
+								Object saturation = colorAndSaturation[1];
 
-								// Area 1
-								String light_1 = String
-										.valueOf(EpicGameLighting.comboBox_area_1
-												.getSelectedItem());
+								if (rgbcolor.getRed() > 0
+										&& rgbcolor.getGreen() > 0
+										&& rgbcolor.getBlue() > 0) {
 
-								for (Light light : bridge.getLights()) {
+									// Convert RGB to XY
+									// TODO model id (LCT001) must be a variable
+									float xyColor[] = PHUtilities
+											.calculateXYFromRGB(
+													rgbcolor.getRed(),
+													rgbcolor.getGreen(),
+													rgbcolor.getBlue(),
+													"LCT001");
 
-									if (light.getName().equals(light_1)) {
-										FullLight fullLight = bridge
-												.getLight(light);
-										bridge.setLightState(fullLight, update);
+									// Set lights. Lights commands a have a max
+									// of
+									// around 10
+									// commands per second
+									StateUpdate update = new StateUpdate()
+											.turnOn()
+											.setXY(xyColor[0], xyColor[1])
+											.setBrightness((Integer) saturation);
+
+									for (Light light : bridge.getLights()) {
+
+										if (light.getName().equals(
+												selectedLightsList.get(j)
+														.toString())) {
+											FullLight fullLight = bridge
+													.getLight(light);
+											bridge.setLightState(fullLight,
+													update);
+
+										}
 									}
 								}
-
-								// Area 2
-								String light_2 = String
-										.valueOf(EpicGameLighting.comboBox_area_2
-												.getSelectedItem());
-
-								for (Light light : bridge.getLights()) {
-
-									if (light.getName().equals(light_2)) {
-										FullLight fullLight = bridge
-												.getLight(light);
-										bridge.setLightState(fullLight, update);
-									}
-								}
-
-								// Area 3
-								String light_3 = String
-										.valueOf(EpicGameLighting.comboBox_area_3
-												.getSelectedItem());
-
-								for (Light light : bridge.getLights()) {
-
-									if (light.getName().equals(light_3)) {
-										FullLight fullLight = bridge
-												.getLight(light);
-										bridge.setLightState(fullLight, update);
-									}
-								}
-
 							}
 						}
 					}
@@ -149,8 +149,8 @@ public class HueConnector {
 					long endTime = System.currentTimeMillis();
 					long duration = endTime - startTime;
 
-					EpicGameLighting.lblProcessTimeValue.setText("" + duration + "ms |"
-							+ path);
+					EpicGameLighting.lblProcessTimeValue.setText("" + duration
+							+ "ms |" + path);
 				}
 
 			} catch (IOException e) {
@@ -185,11 +185,14 @@ public class HueConnector {
 			float[] sumVal = new float[36];
 			float[] hsv = new float[3];
 
+			int total_parts = 3;
 			int height = image.getHeight();
 			int width = image.getWidth();
+			int part_width = (int) Math.floor(width / total_parts);
+			int col_nr = part_width * part - part_width;
 
 			for (int row = 0; row < height; row++) {
-				for (int col = 0; col < width; col++) {
+				for (int col = col_nr; col < (part_width * part); col++) {
 
 					Color c = new Color(image.getRGB(col, row));
 
@@ -317,7 +320,7 @@ public class HueConnector {
 			for (final File fileEntry : folder.listFiles()) {
 				if (!fileEntry.isDirectory()) {
 
-					// fileEntry.delete();
+					 fileEntry.delete();
 				}
 			}
 		}
