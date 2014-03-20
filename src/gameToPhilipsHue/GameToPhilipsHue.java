@@ -6,13 +6,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-import javax.swing.JLabel;
 
 import nl.q42.jue.FullLight;
 import nl.q42.jue.HueBridge;
@@ -27,6 +25,7 @@ public class GameToPhilipsHue {
 	protected static final BufferedImage image = null;
 	public static boolean is_processing = false;
 	public static boolean is_activated = false;
+	public static HueBridge bridge;
 
 	static Runnable hueRunnable = new Runnable() {
 
@@ -41,10 +40,6 @@ public class GameToPhilipsHue {
 					BufferedImage image = null;
 
 					long startTime = System.currentTimeMillis();
-
-					int red = 0;
-					int green = 0;
-					int blue = 0;
 
 					// Read images
 					String folder_path = Config.path;
@@ -73,45 +68,73 @@ public class GameToPhilipsHue {
 
 						if (image != null) { // check if file is image
 
-							// Average color
-							// getAverageColor(image);
-
-							// Dominant color
-							Color rgbcolor = getDominantColor(image, true);
+							// Get Dominant color
+							Color rgbcolor = getDominantColor(image, true, 1);
 
 							if (rgbcolor.getRed() > 0
 									&& rgbcolor.getGreen() > 0
 									&& rgbcolor.getBlue() > 0) {
 
 								// Convert RGB to XY
+								// @todo modelid must be a var
 								float xyColor[] = PHUtilities
 										.calculateXYFromRGB(rgbcolor.getRed(),
 												rgbcolor.getGreen(),
-												rgbcolor.getBlue(), "LCT001"); // @todo
-																				// modelid
-																				// must
-																				// be
-																				// a
-																				// var
-
-								red = rgbcolor.getRed();
-								green = rgbcolor.getGreen();
-								blue = rgbcolor.getBlue();
+												rgbcolor.getBlue(), "LCT001");
 
 								// Set lights color
-								HueBridge bridge = new HueBridge(Config.ip,
-										Config.username);
+
 								StateUpdate update = new StateUpdate().turnOn()
 										.setXY(xyColor[0], xyColor[1]);
 
 								// Set lights. Lights commands a have a max of
 								// around 10
 								// commands per second
+
+								// @todo: ugly code!
+
+								// Area 1
+								String light_1 = String
+										.valueOf(UI.comboBox_area_1
+												.getSelectedItem());
+
 								for (Light light : bridge.getLights()) {
-									FullLight fullLight = bridge
-											.getLight(light);
-									bridge.setLightState(fullLight, update);
+
+									if (light.getName().equals(light_1)) {
+										FullLight fullLight = bridge
+												.getLight(light);
+										bridge.setLightState(fullLight, update);
+									}
 								}
+
+								// Area 2
+								String light_2 = String
+										.valueOf(UI.comboBox_area_2
+												.getSelectedItem());
+
+								for (Light light : bridge.getLights()) {
+
+									if (light.getName().equals(light_2)) {
+										FullLight fullLight = bridge
+												.getLight(light);
+										bridge.setLightState(fullLight, update);
+									}
+								}
+
+								// Area 3
+								String light_3 = String
+										.valueOf(UI.comboBox_area_3
+												.getSelectedItem());
+
+								for (Light light : bridge.getLights()) {
+
+									if (light.getName().equals(light_3)) {
+										FullLight fullLight = bridge
+												.getLight(light);
+										bridge.setLightState(fullLight, update);
+									}
+								}
+
 							}
 						}
 					}
@@ -122,20 +145,21 @@ public class GameToPhilipsHue {
 					long endTime = System.currentTimeMillis();
 					long duration = endTime - startTime;
 
-					UI.lblProcessTimeValue.setText("" + duration + "ms " + "R:"
-							+ red + "G:" + green + "B:" + blue + "|" + path);
+					UI.lblProcessTimeValue.setText("" + duration + "ms |"
+							+ path);
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				UI.lblProcessError.setText(e.getMessage());
+				GameToPhilipsHue.stop();
 			} catch (ApiException e) {
-				e.printStackTrace();
+				UI.lblProcessError.setText(e.getMessage());
+				GameToPhilipsHue.stop();
 			}
-
 		}
 
 		private Color getDominantColor(BufferedImage image,
-				boolean applyThreshold) {
+				boolean applyThreshold, int part) {
 
 			// Keep track of how many times a hue in a given bin appears
 			// in the image.
@@ -222,13 +246,14 @@ public class GameToPhilipsHue {
 
 	public static void main(String[] args) {
 
-		UI gui = new UI();
-		gui.initialize();
-		gui.frame.setVisible(true);
+	}
+
+	public static void initialize() throws ApiException {
 
 		Properties prop = new Properties();
 
 		try {
+
 			// load a properties file
 			prop.load(new FileInputStream("config.properties"));
 
@@ -239,10 +264,20 @@ public class GameToPhilipsHue {
 					.getProperty("refreshrate"));
 			Config.path = prop.getProperty("path");
 
+			// Empty folder
 			emptyFolder();
 
-		} catch (IOException ex) {
-			ex.printStackTrace();
+			bridge = new HueBridge(Config.ip, Config.username);
+
+			// Get Lights
+			for (Light light : bridge.getLights()) {
+				UI.comboBox_area_1.addItem(light.getName());
+				UI.comboBox_area_2.addItem(light.getName());
+				UI.comboBox_area_3.addItem(light.getName());
+			}
+
+		} catch (IOException e) {
+			UI.lblProcessError.setText(e.getMessage());
 		}
 
 		// Schedule periodic task
@@ -262,7 +297,7 @@ public class GameToPhilipsHue {
 			for (final File fileEntry : folder.listFiles()) {
 				if (!fileEntry.isDirectory()) {
 
-					fileEntry.delete();
+					// fileEntry.delete();
 				}
 			}
 		}

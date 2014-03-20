@@ -12,18 +12,38 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
+import nl.q42.jue.exceptions.ApiException;
+
+import java.awt.Color;
 import java.awt.Font;
 
 public class UI {
 
 	JFrame frame;
 	static JLabel lblProcessTimeValue = new JLabel("");
+	static JLabel lblProcessError = new JLabel("");
+	static JButton toggleBtn = new JButton("Start");
+	static JComboBox comboBox_area_1 = new JComboBox();
+	static JComboBox comboBox_area_2 = new JComboBox();
+	static JComboBox comboBox_area_3 = new JComboBox();
+	
 
 	/**
 	 * Launch the application.
+	 * 
+	 * @throws ApiException
 	 */
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) throws ApiException {
+
+		UI gui = new UI();
+		gui.frame.setVisible(true);
+
+		try {
+			GameToPhilipsHue.initialize();
+			UI.toggleBtn.setVisible(true);
+		} catch (ApiException e) {
+			lblProcessError.setText(e.getMessage());
+		}
 	}
 
 	/**
@@ -65,37 +85,41 @@ public class UI {
 		lblArea_3.setBounds(368, 40, 150, 16);
 		panelCommon.add(lblArea_3);
 
-		JComboBox comboBox_area_1 = new JComboBox();
 		comboBox_area_1.setBounds(20, 60, 150, 27);
+		comboBox_area_1.addItem("");
 		panelCommon.add(comboBox_area_1);
 
-		JComboBox comboBox_area_2 = new JComboBox();
 		comboBox_area_2.setBounds(199, 60, 150, 27);
+		comboBox_area_2.addItem("");
 		panelCommon.add(comboBox_area_2);
 
-		JComboBox comboBox_area_3 = new JComboBox();
 		comboBox_area_3.setBounds(368, 60, 150, 27);
+		comboBox_area_3.addItem("");
 		panelCommon.add(comboBox_area_3);
 
 		JLabel lblProcessTime = new JLabel("Last image processed in:");
 		lblProcessTime.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
 		lblProcessTime.setBounds(24, 135, 172, 16);
 		panelCommon.add(lblProcessTime);
+		
 
-		lblProcessTimeValue.setBounds(20, 159, 450, 16);
+		UI.toggleBtn.setVisible(false);
+
+		lblProcessTimeValue.setBounds(24, 159, 450, 16);
 		panelCommon.add(lblProcessTimeValue);
+
+		lblProcessError.setBounds(24, 170, 450, 16);
+		lblProcessError.setForeground(Color.red);
+		panelCommon.add(lblProcessError);
 
 		JPanel panel = new JPanel();
 		tabbedPane.addTab("Settings", null, panel, null);
 		panel.setLayout(null);
-
-		final JButton toggleBtn = new JButton("Start");
-		toggleBtn.setVisible(false);
-		toggleBtn.setVisible(true);
-		toggleBtn.addMouseListener(new MouseAdapter() {
-			@Override
+		
+		UI.toggleBtn.addMouseListener(new MouseAdapter() {
+			
 			public void mouseClicked(MouseEvent e) {
-
+				
 				if (!GameToPhilipsHue.is_activated) {
 					GameToPhilipsHue.start();
 					toggleBtn.setText("Stop");
