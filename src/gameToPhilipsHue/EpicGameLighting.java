@@ -17,7 +17,7 @@ import nl.q42.jue.exceptions.ApiException;
 import java.awt.Color;
 import java.awt.Font;
 
-public class UI {
+public class EpicGameLighting {
 
 	JFrame frame;
 	static JLabel lblProcessTimeValue = new JLabel("");
@@ -26,7 +26,6 @@ public class UI {
 	static JComboBox comboBox_area_1 = new JComboBox();
 	static JComboBox comboBox_area_2 = new JComboBox();
 	static JComboBox comboBox_area_3 = new JComboBox();
-	
 
 	/**
 	 * Launch the application.
@@ -35,12 +34,12 @@ public class UI {
 	 */
 	public static void main(String[] args) throws ApiException {
 
-		UI gui = new UI();
+		EpicGameLighting gui = new EpicGameLighting();
 		gui.frame.setVisible(true);
 
 		try {
-			GameToPhilipsHue.initialize();
-			UI.toggleBtn.setVisible(true);
+			HueConnector.initialize();
+			EpicGameLighting.toggleBtn.setVisible(true);
 		} catch (ApiException e) {
 			lblProcessError.setText(e.getMessage());
 		}
@@ -49,7 +48,7 @@ public class UI {
 	/**
 	 * Create the application.
 	 */
-	public UI() {
+	public EpicGameLighting() {
 		initialize();
 	}
 
@@ -57,7 +56,7 @@ public class UI {
 	 * Initialize the contents of the frame.
 	 */
 	void initialize() {
-		frame = new JFrame("Game to Philips Hue");
+		frame = new JFrame("Epic Game Lighting for Hue");
 		frame.setBounds(100, 100, 600, 400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(
@@ -67,7 +66,7 @@ public class UI {
 		frame.getContentPane().add(tabbedPane, "cell 0 0 1 2,grow");
 
 		JPanel panelCommon = new JPanel();
-		tabbedPane.addTab("Common", null, panelCommon, null);
+		tabbedPane.addTab("Hue", null, panelCommon, null);
 		panelCommon.setLayout(null);
 
 		JLabel lblArea_1 = new JLabel("Area 1");
@@ -101,9 +100,8 @@ public class UI {
 		lblProcessTime.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
 		lblProcessTime.setBounds(24, 135, 172, 16);
 		panelCommon.add(lblProcessTime);
-		
 
-		UI.toggleBtn.setVisible(false);
+		EpicGameLighting.toggleBtn.setVisible(false);
 
 		lblProcessTimeValue.setBounds(24, 159, 450, 16);
 		panelCommon.add(lblProcessTimeValue);
@@ -112,19 +110,19 @@ public class UI {
 		lblProcessError.setForeground(Color.red);
 		panelCommon.add(lblProcessError);
 
-		JPanel panel = new JPanel();
-		tabbedPane.addTab("Settings", null, panel, null);
-		panel.setLayout(null);
-		
-		UI.toggleBtn.addMouseListener(new MouseAdapter() {
-			
+//		JPanel panel = new JPanel();
+//		tabbedPane.addTab("Settings", null, panel, null);
+//		panel.setLayout(null);
+
+		EpicGameLighting.toggleBtn.addMouseListener(new MouseAdapter() {
+
 			public void mouseClicked(MouseEvent e) {
-				
-				if (!GameToPhilipsHue.is_activated) {
-					GameToPhilipsHue.start();
+
+				if (!HueConnector.is_activated) {
+					HueConnector.start();
 					toggleBtn.setText("Stop");
 				} else {
-					GameToPhilipsHue.stop();
+					HueConnector.stop();
 					toggleBtn.setText("Start");
 				}
 			}

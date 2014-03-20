@@ -20,7 +20,7 @@ import nl.q42.jue.exceptions.ApiException;
 
 import com.philips.lighting.hue.sdk.utilities.PHUtilities;
 
-public class GameToPhilipsHue {
+public class HueConnector {
 
 	protected static final BufferedImage image = null;
 	public static boolean is_processing = false;
@@ -33,9 +33,9 @@ public class GameToPhilipsHue {
 
 			try {
 
-				if (GameToPhilipsHue.is_processing == false
-						&& GameToPhilipsHue.is_activated == true) {
-					GameToPhilipsHue.is_processing = true;
+				if (HueConnector.is_processing == false
+						&& HueConnector.is_activated == true) {
+					HueConnector.is_processing = true;
 
 					BufferedImage image = null;
 
@@ -69,14 +69,17 @@ public class GameToPhilipsHue {
 						if (image != null) { // check if file is image
 
 							// Get Dominant color
-							Color rgbcolor = getDominantColor(image, true, 1);
+							Object[] colorAndSaturation = getDominantColor(
+									image, true, 1);
+							Color rgbcolor = (Color) colorAndSaturation[0];
+							Object saturation = colorAndSaturation[1];
 
 							if (rgbcolor.getRed() > 0
 									&& rgbcolor.getGreen() > 0
 									&& rgbcolor.getBlue() > 0) {
 
 								// Convert RGB to XY
-								// @todo modelid must be a var
+								// TODO model id (LCT001) must be a variable
 								float xyColor[] = PHUtilities
 										.calculateXYFromRGB(rgbcolor.getRed(),
 												rgbcolor.getGreen(),
@@ -85,17 +88,18 @@ public class GameToPhilipsHue {
 								// Set lights color
 
 								StateUpdate update = new StateUpdate().turnOn()
-										.setXY(xyColor[0], xyColor[1]);
+										.setXY(xyColor[0], xyColor[1])
+										.setBrightness( (Integer) saturation);
 
 								// Set lights. Lights commands a have a max of
 								// around 10
 								// commands per second
 
-								// @todo: ugly code!
+								// TODO rewrite this ugly code!
 
 								// Area 1
 								String light_1 = String
-										.valueOf(UI.comboBox_area_1
+										.valueOf(EpicGameLighting.comboBox_area_1
 												.getSelectedItem());
 
 								for (Light light : bridge.getLights()) {
@@ -109,7 +113,7 @@ public class GameToPhilipsHue {
 
 								// Area 2
 								String light_2 = String
-										.valueOf(UI.comboBox_area_2
+										.valueOf(EpicGameLighting.comboBox_area_2
 												.getSelectedItem());
 
 								for (Light light : bridge.getLights()) {
@@ -123,7 +127,7 @@ public class GameToPhilipsHue {
 
 								// Area 3
 								String light_3 = String
-										.valueOf(UI.comboBox_area_3
+										.valueOf(EpicGameLighting.comboBox_area_3
 												.getSelectedItem());
 
 								for (Light light : bridge.getLights()) {
@@ -140,25 +144,25 @@ public class GameToPhilipsHue {
 					}
 
 					emptyFolder();
-					GameToPhilipsHue.is_processing = false;
+					HueConnector.is_processing = false;
 
 					long endTime = System.currentTimeMillis();
 					long duration = endTime - startTime;
 
-					UI.lblProcessTimeValue.setText("" + duration + "ms |"
+					EpicGameLighting.lblProcessTimeValue.setText("" + duration + "ms |"
 							+ path);
 				}
 
 			} catch (IOException e) {
-				UI.lblProcessError.setText(e.getMessage());
-				GameToPhilipsHue.stop();
+				EpicGameLighting.lblProcessError.setText(e.getMessage());
+				HueConnector.stop();
 			} catch (ApiException e) {
-				UI.lblProcessError.setText(e.getMessage());
-				GameToPhilipsHue.stop();
+				EpicGameLighting.lblProcessError.setText(e.getMessage());
+				HueConnector.stop();
 			}
 		}
 
-		private Color getDominantColor(BufferedImage image,
+		private Object[] getDominantColor(BufferedImage image,
 				boolean applyThreshold, int part) {
 
 			// Keep track of how many times a hue in a given bin appears
@@ -166,6 +170,7 @@ public class GameToPhilipsHue {
 			// Hue values range [0 .. 360), so dividing by 10, we get 36
 			// bins.
 			int[] colorBins = new int[36];
+			int[] saturationBins = new int[36];
 
 			// The bin with the most colors. Initialize to -1 to prevent
 			// accidentally
@@ -216,8 +221,11 @@ public class GameToPhilipsHue {
 
 			// maxBin may never get updated if the image holds only transparent
 			// and/or black/white pixels.
-			if (maxBin < 0)
-				return new Color(0, 0, 0, 0);
+			if (maxBin < 0) {
+				Color black_color = new Color(0, 0, 0, 0);
+				Object[] objectArray = { black_color };
+				return objectArray;
+			}
 
 			// Return a color with the average hue/saturation/value of
 			// the bin with the most colors.
@@ -228,20 +236,32 @@ public class GameToPhilipsHue {
 			int rgb = Color.HSBtoRGB(hsv[0], hsv[1], hsv[2]);
 			Color rgbcolor = new Color(rgb);
 
-			return rgbcolor;
+			// TODO: brightness must be separated from color?
+			Object[] objectArray = { rgbcolor, (Integer) Brightness(rgbcolor) };
+			return objectArray;
 		}
 	};
+
+	/**
+	 * @see http://alienryderflex.com/hsp.html
+	 * @param c
+	 * @return
+	 */
+	private static int Brightness(Color c) {
+		return (int) Math.sqrt(c.getRed() * c.getRed() * .241 + c.getGreen()
+				* c.getGreen() * .691 + c.getBlue() * c.getBlue() * .068);
+	}
 
 	public static void start() {
 
 		emptyFolder();
-		GameToPhilipsHue.is_activated = true;
-
+		HueConnector.is_activated = true;
+		EpicGameLighting.lblProcessError.setText("");
 	}
 
 	public static void stop() {
-		GameToPhilipsHue.is_processing = false;
-		GameToPhilipsHue.is_activated = false;
+		HueConnector.is_processing = false;
+		HueConnector.is_activated = false;
 	}
 
 	public static void main(String[] args) {
@@ -271,13 +291,13 @@ public class GameToPhilipsHue {
 
 			// Get Lights
 			for (Light light : bridge.getLights()) {
-				UI.comboBox_area_1.addItem(light.getName());
-				UI.comboBox_area_2.addItem(light.getName());
-				UI.comboBox_area_3.addItem(light.getName());
+				EpicGameLighting.comboBox_area_1.addItem(light.getName());
+				EpicGameLighting.comboBox_area_2.addItem(light.getName());
+				EpicGameLighting.comboBox_area_3.addItem(light.getName());
 			}
 
 		} catch (IOException e) {
-			UI.lblProcessError.setText(e.getMessage());
+			EpicGameLighting.lblProcessError.setText(e.getMessage());
 		}
 
 		// Schedule periodic task
