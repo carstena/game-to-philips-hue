@@ -23,9 +23,9 @@ public class EpicGameLighting {
 	static JLabel lblProcessTimeValue = new JLabel("");
 	static JLabel lblProcessError = new JLabel("");
 	static JButton toggleBtn = new JButton("Start");
-	static JComboBox comboBox_area_1 = new JComboBox();
-	static JComboBox comboBox_area_2 = new JComboBox();
-	static JComboBox comboBox_area_3 = new JComboBox();
+	static JComboBox<String> comboBox_area_1 = new JComboBox<String>();
+	static JComboBox<String> comboBox_area_2 = new JComboBox<String>();
+	static JComboBox<String> comboBox_area_3 = new JComboBox<String>();
 
 	/**
 	 * Launch the application.

@@ -191,7 +191,6 @@ public class HueConnector {
 			// Hue values range [0 .. 360), so dividing by 10, we get 36
 			// bins.
 			int[] colorBins = new int[36];
-			int[] saturationBins = new int[36];
 
 			// The bin with the most colors. Initialize to -1 to prevent
 			// accidentally
