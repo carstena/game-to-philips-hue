@@ -1,25 +1,29 @@
-Game to Philips Hue
-===================
+Epic Game Lighting for Hue
+==========================
 
-Extend your game experience with Philips Hue. This is a program for Philips Hue that grabs of an image (screenshot) from a directory. It's build to work in combination with a screencapture programs like Bandicam, Fraps etc.
+Extend your game experience with Philips Hue. Send your colors from your game to Philips Hue. The program works in combination with a screencapture program like Bandicam, Fraps etc.
+
+![Interface](/img/ui.png?raw=true "Interface")
 
 ## Screencapture programs
 Setup the screencapture program to take a screenshot every 1 second (or less) and save it to a folder. Use the defined folder path in the config.properties file.
 
-Available programs:
+Suggested programs:
 
 * [Bandicam](http://www.bandicam.com/)
 * [Fraps](http://www.fraps.com/) - one screenshot per 1 second max.
 * [Dxtory](http://exkode.com/dxtory-features-en.html)
 
 ## What does it do?
-The program reads the specified folder for the latest image. Then it calculates the average color of the image. After that it sends the color to all the Philips Hue lights. This program deletes the created screenshots folder to keep things cleaned up. 
+The program scans the specified folder for the most recent image. Then it calculates the most dominant color of the image. After that it sends the color to three Philips Hue lightbulbs. This program deletes the created screenshots folder to keep things cleaned up. 
 
 ## Install
 * Make sure you installed Java: http://java.com/
-* Download and extract `game-to-hue.zip`
+* Download and extract `EpicGameLightingforHue.zip`
 * Create a file named `config.properties` (see example below)
-* Run `game-to-hue.jar`
+* Run `EpicGameLightingforHue.jar`
+* Select a lightbulb for each area
+* Click 'Start'
 
 ## config.properties (file)
 
