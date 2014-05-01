@@ -1,5 +1,12 @@
 # Game to Philips Hue changelog
 
+## 1.1
+Changes:
+
+	- Added a new interface
+	- Added brightness calculation
+	- Three lightbulbs are now supported. Screencolors are calculated in three parts (vertically).
+
 ## 1.0
 Changes:
 
