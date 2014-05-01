@@ -3,7 +3,7 @@ Epic Game Lighting for Hue
 
 Extend your game experience with Philips Hue. Send your colors from your game to Philips Hue. The program works in combination with a screencapture program like Bandicam, Fraps etc.
 
-![Interface](/img/ui.png?raw=true "Interface")
+![Interface](/img/interface.png?raw=true "Interface")
 
 ## Screencapture programs
 Setup the screencapture program to take a screenshot every 1 second (or less) and save it to a folder. Use the defined folder path in the config.properties file.
