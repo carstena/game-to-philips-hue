@@ -69,17 +69,17 @@ public class EpicGameLighting {
 		tabbedPane.addTab("Hue", null, panelCommon, null);
 		panelCommon.setLayout(null);
 
-		JLabel lblArea_1 = new JLabel("Area 1");
+		JLabel lblArea_1 = new JLabel("Left");
 		lblArea_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblArea_1.setBounds(20, 40, 150, 16);
 		panelCommon.add(lblArea_1);
 
-		JLabel lblArea_2 = new JLabel("Area 2");
+		JLabel lblArea_2 = new JLabel("Center");
 		lblArea_2.setHorizontalAlignment(SwingConstants.CENTER);
 		lblArea_2.setBounds(199, 40, 150, 16);
 		panelCommon.add(lblArea_2);
 
-		JLabel lblArea_3 = new JLabel("Area 3");
+		JLabel lblArea_3 = new JLabel("Right");
 		lblArea_3.setHorizontalAlignment(SwingConstants.CENTER);
 		lblArea_3.setBounds(368, 40, 150, 16);
 		panelCommon.add(lblArea_3);
