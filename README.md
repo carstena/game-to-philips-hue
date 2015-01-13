@@ -27,7 +27,7 @@ The program scans the specified folder for the most recent image. Then it calcul
 
 ## config.properties (file)
 
-config.properties is the configuration file. Create a file with the name`config.properties` in the same folder as `game-to-hue.jar`. 
+config.properties is the configuration file. Create a file with the name`config.properties` in the same folder as `EpicGameLightingforHue.jar`. 
 
 * `username` username that is authorized with your bridge (see: http://developers.meethue.com/gettingstarted.html)
 * `ip` ip address of your bridge (discover ip here: http://www.meethue.com/api/nupnp)
