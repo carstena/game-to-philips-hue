@@ -51,15 +51,12 @@ public class HueConnector {
 					final File folder = new File(folder_path);
 
 					String path = null;
-
-					
-					
 					File[] files = folder.listFiles();
 
-					Arrays.sort( files, new Comparator<File>() {
-					    public int compare( File a, File b ) {
-					        return (int) (b.lastModified() - a.lastModified());
-					    }
+					Arrays.sort(files, new Comparator<File>() {
+						public int compare(File a, File b) {
+							return (int) (b.lastModified() - a.lastModified());
+						}
 					});
 
 					if (files.length > 0) {
@@ -75,11 +72,14 @@ public class HueConnector {
 											.toURL();
 
 									image = ImageIO.read(url);
-								} 
-								
-								if(fileEntry.exists() && fileEntry.canRead() && !fileEntry.getName().equals(current_file)) {
+								}
+
+								if (fileEntry.exists() // Check if file extists
+										&& fileEntry.canRead()
+										&& !fileEntry.getName().equals(
+												current_file)) {
 									try {
-										fileEntry.delete();
+										fileEntry.delete(); // Delete used image
 									} catch (Exception e) {
 										EpicGameLighting.lblProcessError
 												.setText(e.getMessage());
@@ -90,7 +90,7 @@ public class HueConnector {
 							}
 						}
 
-						if (image != null) { // check if file is image
+						if (image != null) { // Check if file is image
 
 							// Set selected Lights in List
 							// TODO: move to start function
