@@ -41,8 +41,18 @@ public class EpicGameLighting {
 			HueConnector.initialize();
 			EpicGameLighting.toggleBtn.setVisible(true);
 		} catch (ApiException e) {
-			lblProcessError.setText(e.getMessage());
+			String message = "l:" + getLineNumber() + " - " + e.getMessage();
+			lblProcessError.setText(message);
 		}
+	}
+
+	/**
+	 * Get the current line number.
+	 * 
+	 * @return integer - Current line number.
+	 */
+	public static int getLineNumber() {
+		return Thread.currentThread().getStackTrace()[2].getLineNumber();
 	}
 
 	/**
@@ -84,14 +94,17 @@ public class EpicGameLighting {
 		lblArea_3.setBounds(368, 40, 150, 16);
 		panelCommon.add(lblArea_3);
 
+		// comboBox for light 1
 		comboBox_area_1.setBounds(20, 60, 150, 27);
 		comboBox_area_1.addItem("");
 		panelCommon.add(comboBox_area_1);
 
+		// comboBox for light 2
 		comboBox_area_2.setBounds(199, 60, 150, 27);
 		comboBox_area_2.addItem("");
 		panelCommon.add(comboBox_area_2);
 
+		// comboBox for light 3
 		comboBox_area_3.setBounds(368, 60, 150, 27);
 		comboBox_area_3.addItem("");
 		panelCommon.add(comboBox_area_3);
@@ -103,17 +116,14 @@ public class EpicGameLighting {
 
 		EpicGameLighting.toggleBtn.setVisible(false);
 
-		lblProcessTimeValue.setBounds(24, 159, 450, 16);
+		lblProcessTimeValue.setBounds(24, 159, 450, 40);
 		panelCommon.add(lblProcessTimeValue);
 
 		lblProcessError.setBounds(24, 170, 450, 16);
 		lblProcessError.setForeground(Color.red);
 		panelCommon.add(lblProcessError);
 
-//		JPanel panel = new JPanel();
-//		tabbedPane.addTab("Settings", null, panel, null);
-//		panel.setLayout(null);
-
+		// Listener for start / stop button
 		EpicGameLighting.toggleBtn.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {

@@ -5,9 +5,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -33,6 +36,15 @@ public class HueConnector {
 	public static HueBridge bridge;
 
 	static Runnable hueRunnable = new Runnable() {
+
+		/**
+		 * Get the current line number.
+		 * 
+		 * @return integer - Current line number.
+		 */
+		public int getLineNumber() {
+			return Thread.currentThread().getStackTrace()[2].getLineNumber();
+		}
 
 		public void run() {
 
@@ -74,15 +86,17 @@ public class HueConnector {
 									image = ImageIO.read(url);
 								}
 
-								if (fileEntry.exists() // Check if file extists
+								if (fileEntry.exists() // Check if file exists
 										&& fileEntry.canRead()
 										&& !fileEntry.getName().equals(
 												current_file)) {
 									try {
 										fileEntry.delete(); // Delete used image
 									} catch (Exception e) {
+										String message = "l:" + getLineNumber()
+												+ " - " + e.getMessage();
 										EpicGameLighting.lblProcessError
-												.setText(e.getMessage());
+												.setText(message);
 									}
 								}
 
@@ -161,7 +175,21 @@ public class HueConnector {
 									}
 								}
 							}
+						} else {
+							DateFormat dateFormat = new SimpleDateFormat(
+									"yyyy/MM/dd HH:mm:ss");
+							Date date = new Date();
+							EpicGameLighting.lblProcessError
+									.setText("File is not an image - "
+											+ dateFormat.format(date));
 						}
+					} else {
+						DateFormat dateFormat = new SimpleDateFormat(
+								"yyyy/MM/dd HH:mm:ss");
+						Date date = new Date();
+						EpicGameLighting.lblProcessError
+								.setText("No file found - "
+										+ dateFormat.format(date));
 					}
 
 					// Reset
@@ -171,15 +199,24 @@ public class HueConnector {
 
 					long endTime = System.currentTimeMillis();
 					long duration = endTime - startTime;
+					String text = "" + duration + "ms |" + path;
 
-					EpicGameLighting.lblProcessTimeValue.setText("" + duration
-							+ "ms |" + path);
+					Object labelText = String.format(
+							"<html><div WIDTH=%d>%s</div><html>", 100, text);
+
+					EpicGameLighting.lblProcessTimeValue
+							.setText((String) labelText);
 				}
 
 			} catch (Exception e) {
-				EpicGameLighting.lblProcessError.setText(e.getMessage());
-				HueConnector.stop();
-				HueConnector.start();
+				
+				String message;
+				if (e.getMessage() == null) {
+					message = "Something went wrong. Check your path in config.properties.";
+				} else {
+					message = "l:" + getLineNumber() + " - " + e.getMessage();
+				}
+				EpicGameLighting.lblProcessError.setText(message);
 			}
 		}
 
@@ -291,6 +328,15 @@ public class HueConnector {
 
 	}
 
+	/**
+	 * Get the current line number.
+	 * 
+	 * @return integer - Current line number.
+	 */
+	public static int getLineNumber() {
+		return Thread.currentThread().getStackTrace()[2].getLineNumber();
+	}
+
 	public static void initialize() throws ApiException {
 
 		Properties prop = new Properties();
@@ -300,7 +346,7 @@ public class HueConnector {
 			// load a properties file
 			prop.load(new FileInputStream("config.properties"));
 
-			// get the property value and save it to Config
+			// get the property value and save it to configuration
 			Config.username = prop.getProperty("username");
 			Config.ip = prop.getProperty("ip");
 			Config.refreshrate = Integer.parseInt(prop
@@ -317,7 +363,8 @@ public class HueConnector {
 			}
 
 		} catch (IOException e) {
-			EpicGameLighting.lblProcessError.setText(e.getMessage());
+			String message = "l:" + getLineNumber() + " - " + e.getMessage();
+			EpicGameLighting.lblProcessError.setText(message);
 		}
 
 		// Schedule periodic task
@@ -326,6 +373,9 @@ public class HueConnector {
 				TimeUnit.MILLISECONDS);
 	}
 
+	/**
+	 * Empty screenshot folder
+	 */
 	private static void emptyFolder() {
 
 		try {
@@ -338,17 +388,21 @@ public class HueConnector {
 			if (number_of_files != null) {
 				for (final File fileEntry : folder.listFiles()) {
 					if (!fileEntry.isDirectory() && fileEntry.exists()) {
-						fileEntry.delete();
+						fileEntry.delete(); // Delete file
 					}
 				}
 			}
 		} catch (Exception e) {
-			EpicGameLighting.lblProcessError.setText(e.getMessage());
+			String message = "l:" + getLineNumber() + " - " + e.getMessage();
+			EpicGameLighting.lblProcessError.setText(message);
 		}
 
 		HueConnector.is_processing = false;
 	}
 
+	/**
+	 * Configuration variables
+	 */
 	public static class Config {
 		public static String username;
 		public static String ip;
