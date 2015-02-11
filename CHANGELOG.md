@@ -1,5 +1,12 @@
 # Game to Philips Hue changelog
 
+## 1.2
+Changes:
+
+  - Better error messages
+  - Interface improvements
+  - Added color indicators for each light
+
 ## 1.1
 Changes:
 
