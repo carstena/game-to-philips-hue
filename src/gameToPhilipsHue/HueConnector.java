@@ -131,65 +131,56 @@ public class HueConnector {
 								colorAndSaturationArray.add(colorAndSaturation);
 							}
 
+							// TODO improve this code, is not very efficient
 							for (int j = 0; j < selectedLightsList.size(); j++) {
 
-								Object[] colorAndSaturation = (Object[]) colorAndSaturationArray
-										.get(j);
+								Object[] colorAndSaturation = (Object[]) colorAndSaturationArray.get(j);
 
 								Color rgbcolor = (Color) colorAndSaturation[0];
 								Object saturation = colorAndSaturation[1];
 
-								if (rgbcolor.getRed() > 0
-										&& rgbcolor.getGreen() > 0
-										&& rgbcolor.getBlue() > 0) {
-
-									// Convert RGB to XY
-									// TODO model id (LCT001) must be a variable
-									float xyColor[] = PHUtilities
-											.calculateXYFromRGB(
-													rgbcolor.getRed(),
-													rgbcolor.getGreen(),
-													rgbcolor.getBlue(),
-													"LCT001");
-
-									// Set lights. Lights commands a have a max
-									// of
-									// around 10
-									// commands per second
-									StateUpdate update = new StateUpdate()
-											.turnOn()
-											.setXY(xyColor[0], xyColor[1])
-											.setBrightness((Integer) saturation);
+								if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0 && rgbcolor.getBlue() > 0) {
 
 									for (Light light : bridge.getLights()) {
 
-										if (light.getName().equals(
-												selectedLightsList.get(j)
-														.toString())) {
-											FullLight fullLight = bridge
-													.getLight(light);
-											bridge.setLightState(fullLight,
-													update);
+										// Set state
+										if (light.getName().equals(selectedLightsList.get(j).toString())) {
+								
+											FullLight fullLight = bridge.getLight(light);
+											
+											// Convert RGB to XY
+											float xyColor[] = PHUtilities.calculateXYFromRGB(
+															rgbcolor.getRed(),
+															rgbcolor.getGreen(),
+															rgbcolor.getBlue(),
+															fullLight.getModelID()); // previous LCT001
 
+											// Set lights. Lights commands a have a max of around 10 commands per second
+											StateUpdate update = new StateUpdate()
+													.turnOn()
+													.setXY(xyColor[0], xyColor[1])
+													.setBrightness((Integer) saturation);
+											
+											
+											bridge.setLightState(fullLight,update);
 										}
 									}
 								}
 							}
 						} else {
-							DateFormat dateFormat = new SimpleDateFormat(
-									"yyyy/MM/dd HH:mm:ss");
+							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 							Date date = new Date();
-							EpicGameLighting.lblProcessError
-									.setText("File is not an image - "
-											+ dateFormat.format(date));
+							EpicGameLighting.lblProcessError .setText("File is not an image - " + dateFormat.format(date));
 						}
 					} else {
-						DateFormat dateFormat = new SimpleDateFormat(
-								"yyyy/MM/dd HH:mm:ss");
+						DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 						Date date = new Date();
 						EpicGameLighting.lblProcessError
-								.setText("No file found - "
-										+ dateFormat.format(date));
+								.setText("<html><body>Error: no file found.<br>1. Is your screencapture program running?<br>2. Is your folderpath correct? "
+										+ Config.path
+										+ "<br>"
+										+ dateFormat.format(date)
+										+ "</body></html>");
 					}
 
 					// Reset
@@ -209,7 +200,7 @@ public class HueConnector {
 				}
 
 			} catch (Exception e) {
-				
+
 				String message;
 				if (e.getMessage() == null) {
 					message = "Something went wrong. Check your path in config.properties.";
@@ -357,6 +348,7 @@ public class HueConnector {
 
 			// Get Lights
 			for (Light light : bridge.getLights()) {
+
 				EpicGameLighting.comboBox_area_1.addItem(light.getName());
 				EpicGameLighting.comboBox_area_2.addItem(light.getName());
 				EpicGameLighting.comboBox_area_3.addItem(light.getName());
@@ -388,7 +380,7 @@ public class HueConnector {
 			if (number_of_files != null) {
 				for (final File fileEntry : folder.listFiles()) {
 					if (!fileEntry.isDirectory() && fileEntry.exists()) {
-						fileEntry.delete(); // Delete file
+						 fileEntry.delete(); // Delete file
 					}
 				}
 			}
