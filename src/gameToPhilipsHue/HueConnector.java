@@ -217,10 +217,21 @@ public class HueConnector {
 				String message;
 				if (e.getMessage() == null) {
 					message = "Something went wrong. Check your path in config.properties.";
+					EpicGameLighting.lblProcessError.setText(message);
+					
+					// dirty fix for weird errors
+					stop();
+					start();
+					
 				} else {
 					message = "l:" + getLineNumber() + " - " + e.getMessage();
+					EpicGameLighting.lblProcessError.setText(message);
+					
+					// dirty fix for weird errors
+					stop();
+					start();
 				}
-				EpicGameLighting.lblProcessError.setText(message);
+				
 			}
 		}
 
