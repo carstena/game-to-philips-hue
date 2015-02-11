@@ -67,10 +67,10 @@ public class EpicGameLighting {
 	 */
 	void initialize() {
 		frame = new JFrame("Epic Game Lighting for Hue");
-		frame.setBounds(100, 100, 600, 400);
+		frame.setBounds(100, 100, 800, 450);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(
-				new MigLayout("", "[600px]", "[249px][29px][][]"));
+				new MigLayout("", "[800px]", "[600px][29px][][]"));
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		frame.getContentPane().add(tabbedPane, "cell 0 0 1 2,grow");
@@ -79,35 +79,46 @@ public class EpicGameLighting {
 		tabbedPane.addTab("Hue", null, panelCommon, null);
 		panelCommon.setLayout(null);
 
-		JLabel lblArea_1 = new JLabel("Left");
+		// Version
+		JLabel lblVersion = new JLabel("Version: 1.2");
+		lblVersion.setBounds(20, 280, 150, 16);
+		lblVersion.setForeground(Color.gray);
+		panelCommon.add(lblVersion);
+
+		// Light 1
+
+		JLabel lblArea_1 = new JLabel("Left area light");
 		lblArea_1.setHorizontalAlignment(SwingConstants.CENTER);
-		lblArea_1.setBounds(20, 40, 150, 16);
+		lblArea_1.setBounds(20, 40, 230, 16);
 		panelCommon.add(lblArea_1);
 
-		JLabel lblArea_2 = new JLabel("Center");
-		lblArea_2.setHorizontalAlignment(SwingConstants.CENTER);
-		lblArea_2.setBounds(199, 40, 150, 16);
-		panelCommon.add(lblArea_2);
-
-		JLabel lblArea_3 = new JLabel("Right");
-		lblArea_3.setHorizontalAlignment(SwingConstants.CENTER);
-		lblArea_3.setBounds(368, 40, 150, 16);
-		panelCommon.add(lblArea_3);
-
-		// comboBox for light 1
-		comboBox_area_1.setBounds(20, 60, 150, 27);
+		comboBox_area_1.setBounds(20, 60, 230, 27);
 		comboBox_area_1.addItem("");
 		panelCommon.add(comboBox_area_1);
 
-		// comboBox for light 2
-		comboBox_area_2.setBounds(199, 60, 150, 27);
+		// Light 2
+
+		JLabel lblArea_2 = new JLabel("Center area light");
+		lblArea_2.setHorizontalAlignment(SwingConstants.CENTER);
+		lblArea_2.setBounds(255, 40, 230, 16);
+		panelCommon.add(lblArea_2);
+
+		comboBox_area_2.setBounds(255, 60, 230, 27);
 		comboBox_area_2.addItem("");
 		panelCommon.add(comboBox_area_2);
 
-		// comboBox for light 3
-		comboBox_area_3.setBounds(368, 60, 150, 27);
+		// Light 3
+
+		JLabel lblArea_3 = new JLabel("Right area light");
+		lblArea_3.setHorizontalAlignment(SwingConstants.CENTER);
+		lblArea_3.setBounds(490, 40, 230, 16);
+		panelCommon.add(lblArea_3);
+
+		comboBox_area_3.setBounds(490, 60, 230, 27);
 		comboBox_area_3.addItem("");
 		panelCommon.add(comboBox_area_3);
+
+		// Process time indicator
 
 		JLabel lblProcessTime = new JLabel("Last image processed in:");
 		lblProcessTime.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
@@ -116,10 +127,10 @@ public class EpicGameLighting {
 
 		EpicGameLighting.toggleBtn.setVisible(false);
 
-		lblProcessTimeValue.setBounds(24, 159, 450, 40);
+		lblProcessTimeValue.setBounds(24, 159, 650, 40);
 		panelCommon.add(lblProcessTimeValue);
 
-		lblProcessError.setBounds(24, 170, 450, 16);
+		lblProcessError.setBounds(24, 200, 450, 64);
 		lblProcessError.setForeground(Color.red);
 		panelCommon.add(lblProcessError);
 
