@@ -3,13 +3,7 @@ package gameToPhilipsHue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import nl.q42.jue.exceptions.ApiException;
@@ -26,6 +20,10 @@ public class EpicGameLighting {
 	static JComboBox<String> comboBox_area_1 = new JComboBox<String>();
 	static JComboBox<String> comboBox_area_2 = new JComboBox<String>();
 	static JComboBox<String> comboBox_area_3 = new JComboBox<String>();
+	
+	static JLabel color1 = new JLabel("<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>", JLabel.CENTER);
+	static JLabel color2 = new JLabel("<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>", JLabel.CENTER);
+	static JLabel color3 = new JLabel("<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>", JLabel.CENTER);
 
 	/**
 	 * Launch the application.
@@ -66,6 +64,8 @@ public class EpicGameLighting {
 	 * Initialize the contents of the frame.
 	 */
 	void initialize() {
+	        
+		// Frame
 		frame = new JFrame("Epic Game Lighting for Hue");
 		frame.setBounds(100, 100, 800, 450);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -95,6 +95,9 @@ public class EpicGameLighting {
 		comboBox_area_1.setBounds(20, 60, 230, 27);
 		comboBox_area_1.addItem("");
 		panelCommon.add(comboBox_area_1);
+		
+		color1.setBounds(20, 85, 230, 32);
+		panelCommon.add(color1);
 
 		// Light 2
 
@@ -106,6 +109,9 @@ public class EpicGameLighting {
 		comboBox_area_2.setBounds(255, 60, 230, 27);
 		comboBox_area_2.addItem("");
 		panelCommon.add(comboBox_area_2);
+		
+		color2.setBounds(255, 85, 230, 32);
+		panelCommon.add(color2);
 
 		// Light 3
 
@@ -117,6 +123,9 @@ public class EpicGameLighting {
 		comboBox_area_3.setBounds(490, 60, 230, 27);
 		comboBox_area_3.addItem("");
 		panelCommon.add(comboBox_area_3);
+		
+		color3.setBounds(490, 85, 230, 32);
+		panelCommon.add(color3);
 
 		// Process time indicator
 
@@ -152,3 +161,5 @@ public class EpicGameLighting {
 				"cell 0 3,alignx center,aligny top");
 	}
 }
+
+

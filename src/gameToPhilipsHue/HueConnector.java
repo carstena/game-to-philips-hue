@@ -154,6 +154,15 @@ public class HueConnector {
 															rgbcolor.getGreen(),
 															rgbcolor.getBlue(),
 															fullLight.getModelID()); // previous LCT001
+											
+											// Update color indicators
+											if(j+1 == 1) {
+												EpicGameLighting.color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+											} else if(j+1 == 2) {
+												EpicGameLighting.color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+											} else if(j+1 == 3) {
+												EpicGameLighting.color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+											}						
 
 											// Set lights. Lights commands a have a max of around 10 commands per second
 											StateUpdate update = new StateUpdate()
@@ -167,10 +176,13 @@ public class HueConnector {
 									}
 								}
 							}
+							
+							EpicGameLighting.lblProcessError.setText("");
+									
 						} else {
 							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 							Date date = new Date();
-							EpicGameLighting.lblProcessError .setText("File is not an image - " + dateFormat.format(date));
+							EpicGameLighting.lblProcessError.setText("File is not an image - " + dateFormat.format(date));
 						}
 					} else {
 						DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -380,7 +392,7 @@ public class HueConnector {
 			if (number_of_files != null) {
 				for (final File fileEntry : folder.listFiles()) {
 					if (!fileEntry.isDirectory() && fileEntry.exists()) {
-						 fileEntry.delete(); // Delete file
+//						 fileEntry.delete(); // Delete file
 					}
 				}
 			}
