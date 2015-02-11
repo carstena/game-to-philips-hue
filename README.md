@@ -32,7 +32,7 @@ config.properties is the configuration file. Create a file with the name`config.
 * `username` username that is authorized with your bridge (see: http://developers.meethue.com/gettingstarted.html)
 * `ip` ip address of your bridge (discover ip here: http://www.meethue.com/api/nupnp)
 * `refreshrate` refresh rate in milliseconds. Every 500 milliseconds should be fine. Try some values, minimal 100 ms.
-* `path` path to the folder with images (screenshots)
+* `path` path to the folder with images (screenshots), don't forget the trailing slash
 
 Linux / OS X example:
 ```
