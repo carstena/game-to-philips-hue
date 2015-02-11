@@ -86,7 +86,8 @@ public class HueConnector {
 									image = ImageIO.read(url);
 								}
 
-								if (fileEntry.exists() // Check if file exists
+								// Check if file exists
+								if (fileEntry.exists() 
 										&& fileEntry.canRead()
 										&& !fileEntry.getName().equals(
 												current_file)) {
@@ -392,7 +393,7 @@ public class HueConnector {
 			if (number_of_files != null) {
 				for (final File fileEntry : folder.listFiles()) {
 					if (!fileEntry.isDirectory() && fileEntry.exists()) {
-//						 fileEntry.delete(); // Delete file
+						 fileEntry.delete(); // Delete file
 					}
 				}
 			}

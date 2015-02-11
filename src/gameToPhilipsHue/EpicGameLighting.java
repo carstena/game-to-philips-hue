@@ -21,9 +21,10 @@ public class EpicGameLighting {
 	static JComboBox<String> comboBox_area_2 = new JComboBox<String>();
 	static JComboBox<String> comboBox_area_3 = new JComboBox<String>();
 	
-	static JLabel color1 = new JLabel("<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>", JLabel.CENTER);
-	static JLabel color2 = new JLabel("<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>", JLabel.CENTER);
-	static JLabel color3 = new JLabel("<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>", JLabel.CENTER);
+	static String defaultIndicator = "<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>";
+	static JLabel color1 = new JLabel(defaultIndicator, JLabel.CENTER);
+	static JLabel color2 = new JLabel(defaultIndicator, JLabel.CENTER);
+	static JLabel color3 = new JLabel(defaultIndicator, JLabel.CENTER);
 
 	/**
 	 * Launch the application.
