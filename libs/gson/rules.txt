@@ -1,1 +1,0 @@
-rule com.google.gson.** com.q42.gson.@1
