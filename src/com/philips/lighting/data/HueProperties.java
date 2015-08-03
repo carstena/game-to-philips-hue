@@ -22,7 +22,7 @@ public final class HueProperties {
 
     private static final String LAST_CONNECTED_IP   = "LastIPAddress";
     private static final String USER_NAME           = "WhiteListUsername";
-    private static final String PROPS_FILE_NAME     = "MyHue.properties";
+    private static final String PROPS_FILE_NAME     = "YourHue.properties";
     private static Properties props=null;
 
     private HueProperties() {
