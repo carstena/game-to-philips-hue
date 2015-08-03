@@ -106,7 +106,7 @@ public class DesktopView extends JFrame {
             
             @Override
             public void actionPerformed(ActionEvent arg0) {
-//                controller.showControlLightsWindow();
+                controller.showControlScreenshotsWindow();
             }
         });
         
