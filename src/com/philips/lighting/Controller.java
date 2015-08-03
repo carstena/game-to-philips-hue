@@ -1,6 +1,7 @@
 package com.philips.lighting;
 
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.JDialog;
 
@@ -8,7 +9,6 @@ import com.philips.lighting.data.HueProperties;
 import com.philips.lighting.gui.AccessPointList;
 import com.philips.lighting.gui.DesktopView;
 import com.philips.lighting.gui.LightColoursFrame;
-import com.philips.lighting.gui.ScreenshotsFrame;
 import com.philips.lighting.gui.PushLinkFrame;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
@@ -16,11 +16,11 @@ import com.philips.lighting.hue.sdk.PHHueSDK;
 import com.philips.lighting.hue.sdk.PHMessageType;
 import com.philips.lighting.hue.sdk.PHSDKListener;
 import com.philips.lighting.model.PHBridge;
-//import com.philips.lighting.model.PHBridgeResourcesCache;
+import com.philips.lighting.model.PHBridgeResourcesCache;
 import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHHueParsingError;
-//import com.philips.lighting.model.PHLight;
-//import com.philips.lighting.model.PHLightState;
+import com.philips.lighting.model.PHLight;
+import com.philips.lighting.model.PHLightState;
 
 public class Controller {
 
@@ -29,8 +29,8 @@ public class Controller {
     
     private PushLinkFrame pushLinkDialog;
     private LightColoursFrame lightColoursFrame;
-    private ScreenshotsFrame screenshotsFrame;
     
+    private static final int MAX_HUE=65535;
     private Controller instance;
 
     public Controller(DesktopView view) {
@@ -86,6 +86,7 @@ public class Controller {
                 pushLinkDialog.setVisible(false);
             }
             // Enable the Buttons/Controls to change the hue bulbs.s
+            desktopView.getProcessScreenshotsButton().setEnabled(true);
             desktopView.getSetLightsButton().setEnabled(true);
 
         }
@@ -147,20 +148,26 @@ public class Controller {
         this.listener = listener;
     }
 
+    public void randomLights() {
+        PHBridge bridge = phHueSDK.getSelectedBridge();
+        PHBridgeResourcesCache cache = bridge.getResourceCache();
+
+        List<PHLight> allLights = cache.getAllLights();
+        Random rand = new Random();
+
+        for (PHLight light : allLights) {
+            PHLightState lightState = new PHLightState();
+            lightState.setHue(rand.nextInt(MAX_HUE));
+            bridge.updateLightState(light, lightState); // If no bridge response is required then use this simpler form.
+        }
+    }
+
     public void showControlLightsWindow() {
         if (lightColoursFrame == null) {
             lightColoursFrame = new LightColoursFrame(); 
         }
         lightColoursFrame.setLocationRelativeTo(null); // Centre window
         lightColoursFrame.setVisible(true);
-    }
-    
-    public void showControlScreenshotsWindow() {
-        if (screenshotsFrame == null) {
-        	screenshotsFrame = new ScreenshotsFrame(); 
-        }
-        screenshotsFrame.setLocationRelativeTo(null); // Centre window
-        screenshotsFrame.setVisible(true);
     }
     
     /**

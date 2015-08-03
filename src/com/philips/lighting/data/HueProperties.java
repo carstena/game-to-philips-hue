@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-//import com.philips.lighting.hue.sdk.connection.impl.PHBridgeInternal;
+import com.philips.lighting.hue.sdk.connection.impl.PHBridgeInternal;
 
 /**
  * HueProperties.java

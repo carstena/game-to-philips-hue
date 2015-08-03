@@ -13,7 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.event.MouseInputAdapter;
 
 import com.philips.lighting.Controller;
-//import com.philips.lighting.data.HueProperties;
+import com.philips.lighting.data.HueProperties;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHHueSDK;
 
