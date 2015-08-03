@@ -9,6 +9,7 @@ import com.philips.lighting.data.HueProperties;
 import com.philips.lighting.gui.AccessPointList;
 import com.philips.lighting.gui.DesktopView;
 import com.philips.lighting.gui.LightColoursFrame;
+import com.philips.lighting.gui.ScreenshotsFrame;
 import com.philips.lighting.gui.PushLinkFrame;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
@@ -29,6 +30,7 @@ public class Controller {
     
     private PushLinkFrame pushLinkDialog;
     private LightColoursFrame lightColoursFrame;
+    private ScreenshotsFrame screenshotsFrame;
     
     private static final int MAX_HUE=65535;
     private Controller instance;
@@ -168,6 +170,14 @@ public class Controller {
         }
         lightColoursFrame.setLocationRelativeTo(null); // Centre window
         lightColoursFrame.setVisible(true);
+    }
+    
+    public void showControlScreenshotsWindow() {
+        if (screenshotsFrame == null) {
+        	screenshotsFrame = new ScreenshotsFrame(); 
+        }
+        screenshotsFrame.setLocationRelativeTo(null); // Centre window
+        screenshotsFrame.setVisible(true);
     }
     
     /**
