@@ -34,6 +34,7 @@ public class Controller {
     
     private static final int MAX_HUE=65535;
     private Controller instance;
+    public static boolean isConnected;
 
     public Controller(DesktopView view) {
         this.desktopView = view;
@@ -87,8 +88,12 @@ public class Controller {
             if (pushLinkDialog!=null && pushLinkDialog.isShowing()) {
                 pushLinkDialog.setVisible(false);
             }
-            // Enable the Buttons/Controls to change the hue bulbs.s
-            desktopView.getProcessScreenshotsButton().setEnabled(true);
+            System.out.println(HueProperties.getFolderPath());
+            isConnected = true;
+            // Enable the Buttons/Controls to start screenshot processing
+            if (HueProperties.getFolderPath() != null) {
+            	desktopView.getProcessScreenshotsButton().setEnabled(true);
+            }
             desktopView.getSetLightsButton().setEnabled(true);
 
         }
@@ -206,5 +211,9 @@ public class Controller {
     
     public void showProgressBar() {
         desktopView.getFindingBridgeProgressBar().setVisible(true);
+    }
+    
+    public Object isConnected() {
+    	return isConnected;
     }
 }

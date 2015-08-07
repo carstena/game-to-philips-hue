@@ -114,6 +114,10 @@ public class DesktopView extends JFrame {
                     File folder = fc.getSelectedFile();
             		HueProperties.storeFolderPath(folder.getPath());
             		lastFolderPath.setText(folder.getPath());
+            		
+            		if (Controller.isConnected == true) {
+            			processScreenshotsButton.setEnabled(true);
+            		}
                 }
             }
         });
