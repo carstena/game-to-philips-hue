@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -105,8 +106,15 @@ public class DesktopView extends JFrame {
             	
             	//Create a file chooser
             	final JFileChooser fc = new JFileChooser();
-
+            	fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            	
             	int returnVal = fc.showOpenDialog(DesktopView.this);
+            	
+            	if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File folder = fc.getSelectedFile();
+            		HueProperties.storeFolderPath(folder.getPath());
+            		lastFolderPath.setText(folder.getPath());
+                }
             }
         });
         
