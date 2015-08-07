@@ -22,6 +22,7 @@ public final class HueProperties {
 
     private static final String LAST_CONNECTED_IP   = "LastIPAddress";
     private static final String USER_NAME           = "WhiteListUsername";
+    private static final String FOLDER_PATH			= "FolderPath";
     private static final String PROPS_FILE_NAME     = "YourHue.properties";
     private static Properties props=null;
 
@@ -30,6 +31,14 @@ public final class HueProperties {
     
     public static void storeLastIPAddress(String ipAddress) {
         props.setProperty(LAST_CONNECTED_IP, ipAddress);
+        saveProperties();
+    }
+    
+    /**
+     * Stores the folder path
+     */
+    public static void storeFolderPath(String folderPath) {
+        props.setProperty(FOLDER_PATH, folderPath);
         saveProperties();
     }
 
@@ -51,6 +60,14 @@ public final class HueProperties {
 
     public static String getLastConnectedIP() {
         return props.getProperty(LAST_CONNECTED_IP);
+    }
+    
+    /**
+     * Returns the stored folder path
+     */
+    public static String getFolderPath() {
+        String folderPath = props.getProperty(FOLDER_PATH);        
+        return folderPath;
     }
     
     public static void loadProperties() {
