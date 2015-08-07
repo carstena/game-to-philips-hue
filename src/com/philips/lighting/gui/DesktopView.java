@@ -133,7 +133,7 @@ public class DesktopView extends JFrame {
         double border = 10;
         double size[][] =
             {{border, 160, 20, 300, 20, 160},                 // Columns
-             {border, 26,  10, 26, 26, 26,6,26}}; // Rows
+             {border, 26,  10, 26, 10, 26, 6, 26, 26}}; // Rows
 
         mainPanel.setLayout (new TableLayout(size));
 
@@ -153,7 +153,7 @@ public class DesktopView extends JFrame {
         mainPanel.add(lastFolderPath,            " 3, 5");
         mainPanel.add(selectFolderButton,        " 5, 5");
         
-        mainPanel.add(processScreenshotsButton,  " 5, 7");
+        mainPanel.add(processScreenshotsButton,  " 5, 8");
 //        mainPanel.add(setLightsButton,           " 5, 7");
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
