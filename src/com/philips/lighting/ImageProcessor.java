@@ -3,9 +3,9 @@ package com.philips.lighting;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
-public class Image {
+public class ImageProcessor {
 
-	private Object[] getDominantColor(BufferedImage image,
+	public static Object[] getDominantColor(BufferedImage image,
 			boolean applyThreshold, int part) {
 
 		// Keep track of how many times a hue in a given bin appears
