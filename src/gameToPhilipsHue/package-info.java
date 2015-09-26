@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author carstena
- *
- */
-package gameToPhilipsHue;
