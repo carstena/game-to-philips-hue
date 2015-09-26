@@ -8,7 +8,7 @@ import com.philips.lighting.hue.sdk.PHHueSDK;
  * EpicGameLighting.java
  *
  */
-class EpicGameLighting {
+public class EpicGameLighting {
 
     public static void main(String args[]) {
         new EpicGameLighting();
