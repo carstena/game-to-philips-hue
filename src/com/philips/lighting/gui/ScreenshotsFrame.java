@@ -1,12 +1,9 @@
 package com.philips.lighting.gui;
 
-import gameToPhilipsHue.EpicGameLighting;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -20,7 +17,6 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -57,7 +53,8 @@ public class ScreenshotsFrame extends JFrame  {
   static JLabel color2 = new JLabel(defaultIndicator, JLabel.CENTER);
   static JLabel color3 = new JLabel(defaultIndicator, JLabel.CENTER);
   static JLabel log = new JLabel("", JLabel.CENTER);
-	
+  public static boolean isProcessing = false;
+  static JButton changeColourButton = new JButton("Start");
   
   public ScreenshotsFrame() {
     super("Lights");
@@ -73,8 +70,6 @@ public class ScreenshotsFrame extends JFrame  {
     // To get lights use the Resource Cache.  
     allLights = bridge.getResourceCache().getAllLights();
    
-    DefaultListModel <String> sampleModel = new DefaultListModel<String>();
-
     JScrollPane listPane = new JScrollPane(lightIdentifiersList);
     listPane.setPreferredSize(new Dimension(300,100));
     
@@ -134,7 +129,7 @@ public class ScreenshotsFrame extends JFrame  {
     }
 	
     // Start / Stop button
-	JButton changeColourButton = new JButton("Start");
+	
     changeColourButton.addActionListener(new ScreenshotProcessor());
     
 	Border buttonPanelBorder = BorderFactory.createEmptyBorder();
@@ -155,187 +150,181 @@ public class ScreenshotsFrame extends JFrame  {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		step();
+		isProcessing = !isProcessing;
+		
+		if (isProcessing) {
+			step();
+			changeColourButton.setText("Stop");
+		} else {
+			changeColourButton.setText("Start");
+		}
 	}
   }
 
   public void step() {
 	  
-	  long startTime = System.currentTimeMillis();
-//	  List<String> selectedLightsList = new ArrayList<String>();
-	  List<Object> colorAndSaturationArray = new ArrayList<Object>();
-		
+	  ActionListener taskPerformer = new ActionListener() {
+        public void actionPerformed(ActionEvent evt) {
+        	// Run event
+        	
+        	System.out.println("step");
+      	  
+      	  
+      	  long startTime = System.currentTimeMillis();
+      	  List<Object> colorAndSaturationArray = new ArrayList<Object>();
+      		
+      	  
+      	  // Read directory
+      	  String folderPath = HueProperties.getFolderPath();
+      	
+      	  final File folder = new File(folderPath);
+      	  final File tempFolder = new File(folderPath + "/temp/");
+      	
+      	  String tempPath = null;
+      	  BufferedImage image = null;
+      	  File[] files = folder.listFiles();
+      	
+      	  Arrays.sort(files, new Comparator<File>() {
+      		  public int compare(File a, File b) {
+      			  return (int) (b.lastModified() - a.lastModified());
+      		  }
+      	  });	
+      	
+      	  int fileCount = 0;
+      	  for (final File fileEntry : files) {
+      		
+      		  if (!fileEntry.isDirectory() && !fileEntry.isHidden()) {
+      			fileCount = fileCount + 1;
+      		  }
+      	  }
+      			
+      	  if (fileCount > 0) {
+      		  int i = 0;
+      				
+      			for (final File fileEntry : files) {
+      				
+      				if (!fileEntry.isDirectory() && !fileEntry.isHidden()) {
+      					
+      					if (i == 0) {
+      						tempPath = folderPath + "/temp/" + fileEntry.getName();
+      						
+      						if(fileEntry.renameTo(new File(tempPath))){ // move file
+      							
+      							java.net.URL url = null;
+      							try {
+      								url = new File(tempPath).toURI().toURL();
+      							} catch (MalformedURLException e1) {
+      								e1.printStackTrace();
+      							}
+
+      							try {
+      								image = ImageIO.read(url);
+      							} catch (IOException e1) {
+      								e1.printStackTrace();
+      							}
+      						}
+      					}
+
+      					i++;
+      				}
+      			}
+      			
+      			// Delete all files in folder
+      			for (final File fileEntry : folder.listFiles()) {
+      				if (!fileEntry.isDirectory() && fileEntry.exists()) {
+      					 fileEntry.delete(); // Delete file
+      				}
+      			}
+      		}
+      		
+      		if (image != null) {
+      			
+      			int i = 0;
+      			
+      			// Get Image color in three vertical parts
+      			for (i = 1; i <= 3; i++) {
+
+      				// Get Dominant color from image part
+      				Object[] colorAndSaturation = ImageProcessor.getDominantColor(image, true, i);
+      				colorAndSaturationArray.add(colorAndSaturation);
+      			}
+      			
+      			// TODO improve this code, is not very efficient
+      			for (int j = 0; j < 3; j++) { // 3 is the number of lights
+      				
+      				int selectedIndex = 0;
+      				
+      				if ((j + 1) == 1) {
+      					selectedIndex = comboBox_area_1.getSelectedIndex() - 1;
+      				}
+      				if ((j + 1) == 2) {
+      					selectedIndex = comboBox_area_2.getSelectedIndex() - 1;
+      				}
+      				if ((j + 1) == 3) {
+      					selectedIndex = comboBox_area_3.getSelectedIndex() - 1;
+      				}
+      				
+      				Object[] colorAndSaturation = (Object[]) colorAndSaturationArray.get(j);
+      				System.out.println("index size:");
+      				System.out.println(colorAndSaturation.length);
+      				Color rgbcolor = (Color) colorAndSaturation[0];
+      				
+      				if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0 && rgbcolor.getBlue() > 0) {
+      					
+      					Object saturation = colorAndSaturation[1];
+      					
+      					String lightIdentifer = allLights.get(selectedIndex).getIdentifier();
+      					
+      					// Update state of LIght
+      					PHLightState lightState = new PHLightState();
+      	                float xy[] = PHUtilities.calculateXYFromRGB(rgbcolor.getRed(), rgbcolor.getGreen(), rgbcolor.getBlue(), allLights.get(selectedIndex).getModelNumber());
+      	                lightState.setX(xy[0]);
+      	                lightState.setY(xy[1]);
+      	                lightState.setOn(true);
+      	                lightState.setBrightness((Integer) saturation);
+      	                
+      	                phHueSDK.getSelectedBridge().updateLightState(lightIdentifer, lightState, null);  // null is passed here as we are not interested in the response from the Bridge.
+      	                
+      	                // Update color indicators
+      					if(j+1 == 1) {
+      						color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+      					} else if(j+1 == 2) {
+      						color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+      					} else if(j+1 == 3) {
+      						color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+      					}	
+      				}
+      			}
+      			
+      			// Delete all files in temp folder
+      			for (final File fileEntry : tempFolder.listFiles()) {
+      				if (!fileEntry.isDirectory() && fileEntry.exists()) {
+      					 fileEntry.delete(); // Delete file
+      				}
+      			}
+      			 
+      			long endTime = System.currentTimeMillis();
+      			long duration = endTime - startTime;
+      			String text = "Image processd in " + duration + "ms";
+      			
+      			log.setText(text);
+      			System.out.println(text);
+      			
+      			if (isProcessing) {
+      				step();
+      			}
+      		}
+      		else {
+      			if (isProcessing) {
+      				step();
+      			}
+      		}
+        }
+	  };
 	  
-	  // Read directory
-			String folderPath = HueProperties.getFolderPath();
-			
-			final File folder = new File(folderPath);
-			final File tempFolder = new File(folderPath + "/temp/");
-			
-//			System.out.println(folderPath);
-
-			String path = null;
-			String tempPath = null;
-			BufferedImage image = null;
-			File[] files = folder.listFiles();
-
-			Arrays.sort(files, new Comparator<File>() {
-				public int compare(File a, File b) {
-					return (int) (b.lastModified() - a.lastModified());
-				}
-			});	
-			
-			int fileCount = 0;
-			for (final File fileEntry : files) {
-				
-				if (!fileEntry.isDirectory() && !fileEntry.isHidden()) {
-					
-					fileCount = fileCount + 1;
-				}
-			}
-			
-			System.out.println(fileCount);
-			
-			if (fileCount > 0) {
-				int i = 0;
-				
-				for (final File fileEntry : files) {
-					
-					if (!fileEntry.isDirectory() && !fileEntry.isHidden()) {
-
-						String currentFile;
-						
-						if (i == 0) {
-							path = folderPath + "/" + fileEntry.getName();
-							tempPath = folderPath + "/temp/" + fileEntry.getName();
-							currentFile = fileEntry.getName();
-							
-							if(fileEntry.renameTo(new File(tempPath))){ // move file
-								
-								java.net.URL url = null;
-								try {
-									url = new File(tempPath).toURI().toURL();
-								} catch (MalformedURLException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-	
-								try {
-									image = ImageIO.read(url);
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-							}
-						}
-
-						i++;
-					}
-				}
-				
-				// Delete all files in folder
-				for (final File fileEntry : folder.listFiles()) {
-					if (!fileEntry.isDirectory() && fileEntry.exists()) {
-						 fileEntry.delete(); // Delete file
-					}
-				}
-			}
-			
-			if (image != null) {
-				
-				int i = 0;
-				
-				// Get Image color in three vertical parts
-				for (i = 1; i <= 3; i++) {
-
-					// Get Dominant color from image part
-					Object[] colorAndSaturation = ImageProcessor.getDominantColor(image, true, i);
-
-					colorAndSaturationArray.add(colorAndSaturation);
-				}
-				
-				// TODO improve this code, is not very efficient
-				for (int j = 0; j < 3; j++) { // 3 is the number of lights
-					
-					int selectedIndex = 0;
-					
-					if ((j + 1) == 1) {
-						selectedIndex = comboBox_area_1.getSelectedIndex() - 1;
-					}
-					if ((j + 1) == 2) {
-						selectedIndex = comboBox_area_2.getSelectedIndex() - 1;
-					}
-					if ((j + 1) == 3) {
-						selectedIndex = comboBox_area_3.getSelectedIndex() - 1;
-					}
-					
-					Object[] colorAndSaturation = (Object[]) colorAndSaturationArray.get(j);
-					System.out.println("index size:");
-					System.out.println(colorAndSaturation.length);
-					Color rgbcolor = (Color) colorAndSaturation[0];
-					
-					if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0 && rgbcolor.getBlue() > 0) {
-						
-						Object saturation = colorAndSaturation[1];
-						
-						String lightIdentifer = allLights.get(selectedIndex).getIdentifier();
-						
-						// Update state of LIght
-						PHLightState lightState = new PHLightState();
-		                float xy[] = PHUtilities.calculateXYFromRGB(rgbcolor.getRed(), rgbcolor.getGreen(), rgbcolor.getBlue(), allLights.get(selectedIndex).getModelNumber());
-		                lightState.setX(xy[0]);
-		                lightState.setY(xy[1]);
-		                lightState.setOn(true);
-		                lightState.setBrightness((Integer) saturation);
-		                
-		                phHueSDK.getSelectedBridge().updateLightState(lightIdentifer, lightState, null);  // null is passed here as we are not interested in the response from the Bridge.
-		                
-		                // Update color indicators
-						if(j+1 == 1) {
-							color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
-						} else if(j+1 == 2) {
-							color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
-						} else if(j+1 == 3) {
-							color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
-						}	
-					}
-				}
-				
-				// Delete all files in temp folder
-				for (final File fileEntry : tempFolder.listFiles()) {
-					if (!fileEntry.isDirectory() && fileEntry.exists()) {
-						 fileEntry.delete(); // Delete file
-					}
-				}
-				
-				
-				
-//				 Wait 50ms before next run
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				 
-				long endTime = System.currentTimeMillis();
-				long duration = endTime - startTime;
-				String text = "Image processd in " + duration + "ms";
-				
-				log.setText(text);
-				System.out.println(text);
-				
-				step();
-			}
-			else {
-				// Wait 1 second before next run
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				step();
-			}
+	  // Timeout
+	  javax.swing.Timer t = new javax.swing.Timer(100, taskPerformer);
+	  t.setRepeats(false);
+	  t.start();
   }
 }
