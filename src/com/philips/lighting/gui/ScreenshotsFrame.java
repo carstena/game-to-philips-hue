@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -48,7 +49,7 @@ public class ScreenshotsFrame extends JFrame  {
     
   private JList <String> lightIdentifiersList;
   private List<PHLight> allLights;
-  static String defaultIndicator = "<html><body><span style='color:gray; font-size: 40px'>\u2022</span></body></html>";
+  static String defaultIndicator = "<html><body><span style='color:gray; font-size: 45px'>\u2022</span></body></html>";
   static JComboBox<String> comboBox_area_1 = new JComboBox<String>();
   static JComboBox<String> comboBox_area_2 = new JComboBox<String>();
   static JComboBox<String> comboBox_area_3 = new JComboBox<String>();
@@ -147,7 +148,21 @@ public class ScreenshotsFrame extends JFrame  {
     pack();
     setVisible(true);
   }
-
+  
+  private static BufferedImage resizeImage(BufferedImage originalImage, int type) {
+	 
+	int width = 640;
+	int scale = Math.round(originalImage.getWidth() / width);
+	int height = Math.round(originalImage.getHeight() / scale);
+	
+	BufferedImage resizedImage = new BufferedImage(width, height, type);
+	Graphics2D g = resizedImage.createGraphics();
+	g.drawImage(originalImage, 0, 0, width, height, null);
+	g.dispose();
+		
+	return resizedImage;
+  }
+  
   private class ScreenshotProcessor implements ActionListener {
 
 	@Override
@@ -159,6 +174,10 @@ public class ScreenshotsFrame extends JFrame  {
 			(new File(HueProperties.getFolderPath()  + "/temp/")).mkdirs();
 		}
 		
+		comboBox_area_1.setEnabled(false);
+		comboBox_area_2.setEnabled(false);
+		comboBox_area_3.setEnabled(false);
+		
 		// Start processing images
 		isProcessing = !isProcessing;
 		
@@ -167,6 +186,10 @@ public class ScreenshotsFrame extends JFrame  {
 			changeColourButton.setText("Stop");
 		} else {
 			changeColourButton.setText("Start");
+
+			comboBox_area_1.setEnabled(true);
+			comboBox_area_2.setEnabled(true);
+			comboBox_area_3.setEnabled(true);
 		}
 	}
   }
@@ -216,7 +239,7 @@ public class ScreenshotsFrame extends JFrame  {
       					if (i == 0) {
       						tempPath = folderPath + "/temp/" + fileEntry.getName();
       						
-      						if(fileEntry.renameTo(new File(tempPath))){ // move file
+      						if (fileEntry.renameTo(new File(tempPath))) { // move file
       							
       							java.net.URL url = null;
       							try {
@@ -226,7 +249,21 @@ public class ScreenshotsFrame extends JFrame  {
       							}
 
       							try {
-      								image = ImageIO.read(url);
+      								// Resize image to speed up getting most common color
+      								File f = new File(tempPath);
+      								if (f.exists() && f.canRead()) {
+	      								BufferedImage originalImage = ImageIO.read(f);
+	      								System.out.println("Type for " + tempPath + ":");
+	      								
+	      								if (originalImage != null){
+	      									System.out.println(originalImage);
+		      								int type = originalImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
+		      								BufferedImage resizeImageJpg = resizeImage(originalImage, type);
+		      								ImageIO.write(resizeImageJpg, "jpg", f); 
+		      								
+		      								image = ImageIO.read(url);
+	      								}
+      								}
       							} catch (IOException e1) {
       								e1.printStackTrace();
       							}
@@ -297,11 +334,11 @@ public class ScreenshotsFrame extends JFrame  {
 	      	                
 	      	                // Update color indicators
 	      					if(j+1 == 1) {
-	      						color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+	      						color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 45px'>\u2022</span></body></html>");
 	      					} else if(j+1 == 2) {
-	      						color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+	      						color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 45px'>\u2022</span></body></html>");
 	      					} else if(j+1 == 3) {
-	      						color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+	      						color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 45px'>\u2022</span></body></html>");
 	      					}	
 	      				}
       				}
