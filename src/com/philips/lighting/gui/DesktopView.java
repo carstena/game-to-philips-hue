@@ -122,15 +122,15 @@ public class DesktopView extends JFrame {
             }
         });
         
-        setLightsButton = new JButton("Change Light Colours");
-        setLightsButton.setEnabled(false);
-        setLightsButton.addActionListener(new ActionListener() {
-            
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                controller.showControlLightsWindow();
-            }
-        });
+//        setLightsButton = new JButton("Change Light Colours");
+//        setLightsButton.setEnabled(false);
+//        setLightsButton.addActionListener(new ActionListener() {
+//            
+//            @Override
+//            public void actionPerformed(ActionEvent arg0) {
+//                controller.showControlLightsWindow();
+//            }
+//        });
         
         processScreenshotsButton = new JButton("Process Screenshots");
         processScreenshotsButton.setEnabled(false);

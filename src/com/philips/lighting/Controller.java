@@ -29,7 +29,7 @@ public class Controller {
     private DesktopView desktopView;
     
     private PushLinkFrame pushLinkDialog;
-    private LightColoursFrame lightColoursFrame;
+//    private LightColoursFrame lightColoursFrame;
     private ScreenshotsFrame screenshotsFrame;
     
     private static final int MAX_HUE=65535;
@@ -169,13 +169,13 @@ public class Controller {
         }
     }
 
-    public void showControlLightsWindow() {
-        if (lightColoursFrame == null) {
-            lightColoursFrame = new LightColoursFrame(); 
-        }
-        lightColoursFrame.setLocationRelativeTo(null); // Centre window
-        lightColoursFrame.setVisible(true);
-    }
+//    public void showControlLightsWindow() {
+//        if (lightColoursFrame == null) {
+//            lightColoursFrame = new LightColoursFrame(); 
+//        }
+//        lightColoursFrame.setLocationRelativeTo(null); // Centre window
+//        lightColoursFrame.setVisible(true);
+//    }
     
     public void showControlScreenshotsWindow() {
         if (screenshotsFrame == null) {
