@@ -10,6 +10,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -45,7 +48,7 @@ public class ScreenshotsFrame extends JFrame  {
     
   private JList <String> lightIdentifiersList;
   private List<PHLight> allLights;
-  static String defaultIndicator = "<html><body><span style='color:gray; font-size: 30px'>\u2022</span></body></html>";
+  static String defaultIndicator = "<html><body><span style='color:gray; font-size: 40px'>\u2022</span></body></html>";
   static JComboBox<String> comboBox_area_1 = new JComboBox<String>();
   static JComboBox<String> comboBox_area_2 = new JComboBox<String>();
   static JComboBox<String> comboBox_area_3 = new JComboBox<String>();
@@ -140,7 +143,7 @@ public class ScreenshotsFrame extends JFrame  {
     
     content.add(buttonPanel, BorderLayout.SOUTH);
    
-    setPreferredSize(new Dimension(740,600));
+    setPreferredSize(new Dimension(740,400));
     pack();
     setVisible(true);
   }
@@ -150,6 +153,13 @@ public class ScreenshotsFrame extends JFrame  {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
+		// Create temp folder if not exits
+		Path path = Paths.get(HueProperties.getFolderPath()  + "/temp/");
+		if (Files.notExists(path)) {
+			(new File(HueProperties.getFolderPath()  + "/temp/")).mkdirs();
+		}
+		
+		// Start processing images
 		isProcessing = !isProcessing;
 		
 		if (isProcessing) {
@@ -165,10 +175,8 @@ public class ScreenshotsFrame extends JFrame  {
 	  
 	  ActionListener taskPerformer = new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
-        	// Run event
         	
-        	System.out.println("step");
-      	  
+        	// Run event
       	  
       	  long startTime = System.currentTimeMillis();
       	  List<Object> colorAndSaturationArray = new ArrayList<Object>();
@@ -264,35 +272,38 @@ public class ScreenshotsFrame extends JFrame  {
       					selectedIndex = comboBox_area_3.getSelectedIndex() - 1;
       				}
       				
-      				Object[] colorAndSaturation = (Object[]) colorAndSaturationArray.get(j);
-      				System.out.println("index size:");
-      				System.out.println(colorAndSaturation.length);
-      				Color rgbcolor = (Color) colorAndSaturation[0];
+      				if (selectedIndex >= 0) {
       				
-      				if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0 && rgbcolor.getBlue() > 0) {
-      					
-      					Object saturation = colorAndSaturation[1];
-      					
-      					String lightIdentifer = allLights.get(selectedIndex).getIdentifier();
-      					
-      					// Update state of LIght
-      					PHLightState lightState = new PHLightState();
-      	                float xy[] = PHUtilities.calculateXYFromRGB(rgbcolor.getRed(), rgbcolor.getGreen(), rgbcolor.getBlue(), allLights.get(selectedIndex).getModelNumber());
-      	                lightState.setX(xy[0]);
-      	                lightState.setY(xy[1]);
-      	                lightState.setOn(true);
-      	                lightState.setBrightness((Integer) saturation);
-      	                
-      	                phHueSDK.getSelectedBridge().updateLightState(lightIdentifer, lightState, null);  // null is passed here as we are not interested in the response from the Bridge.
-      	                
-      	                // Update color indicators
-      					if(j+1 == 1) {
-      						color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
-      					} else if(j+1 == 2) {
-      						color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
-      					} else if(j+1 == 3) {
-      						color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
-      					}	
+	      				Object[] colorAndSaturation = (Object[]) colorAndSaturationArray.get(j);
+	      				System.out.println("index size:");
+	      				System.out.println(colorAndSaturation.length);
+	      				Color rgbcolor = (Color) colorAndSaturation[0];
+	      				
+	      				if (rgbcolor.getRed() > 0 && rgbcolor.getGreen() > 0 && rgbcolor.getBlue() > 0) {
+	      					
+	      					Object saturation = colorAndSaturation[1];
+	      					
+	      					String lightIdentifer = allLights.get(selectedIndex).getIdentifier();
+	      					
+	      					// Update state of LIght
+	      					PHLightState lightState = new PHLightState();
+	      	                float xy[] = PHUtilities.calculateXYFromRGB(rgbcolor.getRed(), rgbcolor.getGreen(), rgbcolor.getBlue(), allLights.get(selectedIndex).getModelNumber());
+	      	                lightState.setX(xy[0]);
+	      	                lightState.setY(xy[1]);
+	      	                lightState.setOn(true);
+	      	                lightState.setBrightness((Integer) saturation);
+	      	                
+	      	                phHueSDK.getSelectedBridge().updateLightState(lightIdentifer, lightState, null);  // null is passed here as we are not interested in the response from the Bridge.
+	      	                
+	      	                // Update color indicators
+	      					if(j+1 == 1) {
+	      						color1.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+	      					} else if(j+1 == 2) {
+	      						color2.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+	      					} else if(j+1 == 3) {
+	      						color3.setText("<html><body><span style='color:rgb("+rgbcolor.getRed()+","+rgbcolor.getGreen()+","+rgbcolor.getBlue()+",); font-size: 30px'>\u2022</span></body></html>");
+	      					}	
+	      				}
       				}
       			}
       			
