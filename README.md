@@ -18,39 +18,11 @@ Suggested programs:
 ## What does it do?
 The program scans the specified folder for the most recent image. Then it calculates the most dominant color of the image. After that it sends the color to three Philips Hue lightbulbs. This program deletes the created screenshots folder to keep things cleaned up. 
 
-## Install
+## How to use
 * Make sure you installed Java: http://java.com/
 * Download and extract `EpicGameLightingforHue.zip`
-* Create a file named `config.properties` (see example below)
 * Run `EpicGameLightingforHue.jar`
-* Select a lightbulb for each area
+* Click the button 'Find New Bridges' to connect to your Bridge
+* Click 'Select folder' and select your screenshot folder
+* Click the button 'Process Screenshots'
 * Click 'Start'
-
-## config.properties (file)
-
-config.properties is the configuration file. Create a file with the name`config.properties` in the same folder as `EpicGameLightingforHue.jar`. 
-
-* `username` username that is authorized with your bridge (see: http://developers.meethue.com/gettingstarted.html)
-* `ip` ip address of your bridge (discover ip here: http://www.meethue.com/api/nupnp)
-* `refreshrate` refresh rate in milliseconds. Every 500 milliseconds should be fine. Try some values, minimal 100 ms.
-* `path` path to the folder with images (screenshots), don't forget the trailing slash
-
-Linux / OS X example:
-```
-username=yourusername
-ip=192.168.0.100
-refreshrate=1000
-path=/Users/username/screenshots/
-```
-
-Windows example:
-
-```
-username=yourusername
-ip=192.168.0.100
-refreshrate=1000
-path=D:\\foldername\\screenshots\\
-```
-
-## TODO
-* Replace Q42 / Jue library (no longer being maintained)
