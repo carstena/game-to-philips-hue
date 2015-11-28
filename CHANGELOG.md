@@ -1,5 +1,10 @@
 # Game to Philips Hue changelog
 
+## 2.0
+    - New interface
+	- Fix errors with darker colors
+    - Fix image reading errors
+
 ## 1.2
 Changes:
 
