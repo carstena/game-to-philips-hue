@@ -152,7 +152,12 @@ public class ScreenshotsFrame extends JFrame  {
   private static BufferedImage resizeImage(BufferedImage originalImage, int type) {
 	 
 	int width = 640;
-	int scale = Math.round(originalImage.getWidth() / width);
+	int imageWidth = originalImage.getWidth();
+	int scale = 1;
+	
+	if (imageWidth > width) {
+		scale = Math.round(imageWidth / width);
+	}
 	int height = Math.round(originalImage.getHeight() / scale);
 	
 	BufferedImage resizedImage = new BufferedImage(width, height, type);
