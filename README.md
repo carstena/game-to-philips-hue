@@ -1,3 +1,7 @@
+This repository is no longer actively maintained
+================================================
+Please use the official [Hue Sync App](https://www2.meethue.com/en-us/entertainment/hue-sync) for a better experience.
+
 Epic Game Lighting for Hue
 ==========================
 
